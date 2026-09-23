@@ -1,0 +1,5 @@
+SONAR_TOKEN f7f081e2691a627cfe373931cc4f3c18eda51d23
+
+sonar-scanner.bat `
+  -D"sonar.organization=luisphernandez" `
+  -D"sonar.projectKey=luisphernandez_market"

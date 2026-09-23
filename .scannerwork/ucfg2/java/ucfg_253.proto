@@ -1,0 +1,130 @@
+
+]businesslogic.BLFacadeImplementation#removeFromBasket(Ljava/lang/String;Ljava/lang/Integer;)ZC
+7src\main\java\businesslogic\BLFacadeImplementation.javaç ç(#"startingBlock*‚
+startingBlock
+ç# ç(JŠ
+‡
+
+æ æ(
+%6"
+__annotate*)
+
+__unknown_file (
+	WebMethod*<
+
+__unknown_file ( 
+
+
+buyerEmailjava.lang.String`
+^
+
+ç+ ç(5
+
+buyerEmailjava.lang.String"__annotation*"
+
+__unknown_file (
+
+%6‹
+ˆ
+
+æ æ(
+%7"
+__annotate*)
+
+__unknown_file (
+	WebMethod*=
+
+__unknown_file (!
+
+
+saleNumberjava.lang.Integera
+_
+
+ç? ç(I
+
+saleNumberjava.lang.Integer"__annotation*"
+
+__unknown_file (
+
+%7*
+1*ü
+1
+è è(‡
+„
+
+è è(
+%0dataAccess.DataAccess"__id*S
+
+__unknown_file (7*5&
+$businesslogic.BLFacadeImplementation"
+	dbManager|z
+
+è è(
+
+%1void"dataAccess.DataAccess#open()V*9
+
+__unknown_file (
+
+%0dataAccess.DataAccess2open()‡
+„
+
+é é(
+%2dataAccess.DataAccess"__id*S
+
+__unknown_file (7*5&
+$businesslogic.BLFacadeImplementation"
+	dbManagerßÜ
+
+é é(F
+%3boolean"NdataAccess.DataAccess#removeFromBasket(Ljava/lang/String;Ljava/lang/Integer;)Z*9
+
+__unknown_file (
+
+%2dataAccess.DataAccess*<
+
+__unknown_file ( 
+
+
+buyerEmailjava.lang.String*=
+
+__unknown_file (!
+
+
+saleNumberjava.lang.Integer27removeFromBasket(Ljava/lang/String;Ljava/lang/Integer;)O
+M
+
+é é(G
+aboolean"__id*+
+
+__unknown_file (
+
+%3boolean‡
+„
+
+ê ê(
+%4dataAccess.DataAccess"__id*S
+
+__unknown_file (7*5&
+$businesslogic.BLFacadeImplementation"
+	dbManager~|
+
+ê ê(
+
+%5void"dataAccess.DataAccess#close()V*9
+
+__unknown_file (
+
+%4dataAccess.DataAccess2close()"
+
+ë ë(
+
+aboolean:,
+
+ç$ ç(6
+
+buyerEmailjava.lang.String:-
+
+ç7 ç(I
+
+saleNumberjava.lang.IntegerB(&
+$businesslogic.BLFacadeImplementationHX

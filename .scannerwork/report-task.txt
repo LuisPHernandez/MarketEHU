@@ -1,0 +1,7 @@
+organization=luisphernandez
+projectKey=luisphernandez_market
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.107671
+dashboardUrl=https://sonarcloud.io/dashboard?id=luisphernandez_market
+ceTaskId=AaDK8C5TLS3M2T2E2385
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AaDK8C5TLS3M2T2E2385

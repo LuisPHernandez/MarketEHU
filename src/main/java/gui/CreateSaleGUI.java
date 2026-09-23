@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -285,16 +286,12 @@ public class CreateSaleGUI extends JFrame {
 	
 	public String encodeFileToBase64Binary(File file){
         try {
-            @SuppressWarnings("resource")
-			FileInputStream fileInputStreamReader = new FileInputStream(file);
-            byte[] bytes = new byte[(int)file.length()];
-            fileInputStreamReader.read(bytes);
-            encodedfile=new String(Base64.getEncoder().encode(bytes));
+        	byte[] bytes = Files.readAllBytes(file.toPath());
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(
+                "No se pudo leer el archivo", e
+            );
         }
         return encodedfile;
     }

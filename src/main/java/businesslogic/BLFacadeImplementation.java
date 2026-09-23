@@ -2,9 +2,11 @@ package businesslogic;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
+import javax.xml.ws.WebServiceException;
 
 import dataAccess.DataAccess;
 import domain.Admin;
@@ -27,13 +29,15 @@ import java.io.IOException;
  */
 @WebService(endpointInterface = "businessLogic.BLFacade")
 public class BLFacadeImplementation  implements BLFacade {
-	 private static final int baseSize = 160;
+	private static final int BASE_SIZE = 160;
+	private static final Logger LOGGER =
+	        Logger.getLogger(BLFacadeImplementation.class.getName());
 
 		private static final String basePath="src/main/resources/images/";
 	DataAccess dbManager;
 
 	public BLFacadeImplementation()  {		
-		System.out.println("Creating BLFacadeImplementation instance");
+		LOGGER.info("Creating BLFacadeImplementation instance");
 		dbManager=new DataAccess();		
 	}
 	
@@ -106,9 +110,10 @@ public class BLFacadeImplementation  implements BLFacade {
         try {
             return ImageIO.read(image);
         } catch (IOException e) {
-            e.printStackTrace();
+        	throw new WebServiceException(
+                    "Could not read image: " + imageName, e
+                );
         }
-        return null;
     }
     
     @WebMethod public Seller isLogged(String log, String pass){

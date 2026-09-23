@@ -4,11 +4,14 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
@@ -47,21 +50,22 @@ public class DataAccess {
 
     public DataAccess() {
         if (c.isDatabaseInitialized()) {
-            String fileName=c.getDbFilename();
+            String fileName = c.getDbFilename();
 
-            File fileToDelete= new File(fileName);
-            if(fileToDelete.delete()){
-                File fileToDeleteTemp= new File(fileName+"$");
-                fileToDeleteTemp.delete();
-                System.out.println("File deleted");
-             } else {
-                 System.out.println("Operation failed");
-                }
+            try {
+                Files.delete(Paths.get(fileName));
+                Files.deleteIfExists(Paths.get(fileName + "$"));
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                    "No se pudo eliminar la base de datos", e
+                );
+            }
         }
         open();
-        if (c.isDatabaseInitialized()) 
+
+        if (c.isDatabaseInitialized()) {
             initializeDB();
-        System.out.println("DataAccess created => isDatabaseLocal: "+c.isDatabaseLocal()+" isDatabaseInitialized: "+c.isDatabaseInitialized());
+        }
 
         close();
     }
@@ -387,7 +391,9 @@ public class DataAccess {
                 return false;
             }
             
-            sale.getSalaketak().removeIf(s -> s.getId() == salaketa.getId());
+            sale.getSalaketak().removeIf(
+            	    s -> Objects.equals(s.getId(), salaketa.getId())
+            	);
 
             Salaketa s = db.find(Salaketa.class, salaketa.getId());
             if (s != null) {

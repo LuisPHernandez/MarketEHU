@@ -10,15 +10,17 @@ import javax.swing.JFrame;
 public class AdminGUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	
+	private static final String RESOURCE_BUNDLE = "Etiquetas";
 
 	public AdminGUI() {
-		this.setTitle(ResourceBundle.getBundle("Etiquetas").getString("AdminGUI.Title"));
+		this.setTitle(ResourceBundle.getBundle(RESOURCE_BUNDLE).getString("AdminGUI.Title"));
 		this.setSize(new Dimension(400, 250));
 		this.getContentPane().setLayout(null);
 		this.setLocationRelativeTo(null); 
 
 		
-		JButton btnSalaketak = new JButton(ResourceBundle.getBundle("Etiquetas").getString("AdminGUI.SalektakKudeatu"));
+		JButton btnSalaketak = new JButton(ResourceBundle.getBundle(RESOURCE_BUNDLE).getString("AdminGUI.SalektakKudeatu"));
 		btnSalaketak.setBounds(new Rectangle(90, 60, 200, 40));
 		btnSalaketak.addActionListener(e -> {
 			new AdminSalaketakGUI().setVisible(true); 
@@ -26,7 +28,7 @@ public class AdminGUI extends JFrame {
 		this.getContentPane().add(btnSalaketak);
 
 		
-		JButton btnVerErreklamazioak = new JButton(ResourceBundle.getBundle("Etiquetas").getString("AdminGUI.ErreklamazioakIkusi"));
+		JButton btnVerErreklamazioak = new JButton(ResourceBundle.getBundle(RESOURCE_BUNDLE).getString("AdminGUI.ErreklamazioakIkusi"));
 		btnVerErreklamazioak.setBounds(new Rectangle(90, 120, 200, 40));
 		btnVerErreklamazioak.addActionListener(e -> {
 			new AdminErreklamazioakGUI().setVisible(true); 

@@ -1,0 +1,177 @@
+
+lbusinesslogic.BLFacadeImplementation#addEskaintza(Ljava/lang/Integer;Ljava/lang/String;FLjava/lang/String;)ZC
+7src\main\java\businesslogic\BLFacadeImplementation.javaé é("startingBlock*∏
+startingBlock
+é é(cä
+á
+
+ç ç(
+%6"
+__annotate*)
+
+__unknown_file (
+	WebMethod*<
+
+__unknown_file ( 
+
+	eskaeraIdjava.lang.Integer`
+^
+
+é( é(1
+	eskaeraIdjava.lang.Integer"__annotation*"
+
+__unknown_file (
+
+%6ã
+à
+
+ç ç(
+%7"
+__annotate*)
+
+__unknown_file (
+	WebMethod*=
+
+__unknown_file (!
+
+sellerEmailjava.lang.Stringa
+_
+
+é: é(E
+sellerEmailjava.lang.String"__annotation*"
+
+__unknown_file (
+
+%7y
+w
+
+ç ç(
+%8"
+__annotate*)
+
+__unknown_file (
+	WebMethod*,
+
+__unknown_file (
+
+pricefloatP
+N
+
+éM é(R
+pricefloat"__annotation*"
+
+__unknown_file (
+
+%8á
+Ñ
+
+ç ç(
+%9"
+__annotate*)
+
+__unknown_file (
+	WebMethod*9
+
+__unknown_file (
+
+messagejava.lang.String]
+[
+
+é[ é(b
+messagejava.lang.String"__annotation*"
+
+__unknown_file (
+
+%9*
+1*è
+
+1
+è è(á
+Ñ
+
+è è(
+%0dataAccess.DataAccess"__id*S
+
+__unknown_file (7*5&
+$businesslogic.BLFacadeImplementation"
+	dbManager|z
+
+è è(
+
+%1void"dataAccess.DataAccess#open()V*9
+
+__unknown_file (
+
+%0dataAccess.DataAccess2open()á
+Ñ
+
+ê ê(#
+%2dataAccess.DataAccess"__id*S
+
+__unknown_file (7*5&
+$businesslogic.BLFacadeImplementation"
+	dbManagerÊ„
+
+ê ê(X
+%3boolean"]dataAccess.DataAccess#addEskaintza(Ljava/lang/Integer;Ljava/lang/String;FLjava/lang/String;)Z*9
+
+__unknown_file (
+
+%2dataAccess.DataAccess*<
+
+__unknown_file ( 
+
+	eskaeraIdjava.lang.Integer*=
+
+__unknown_file (!
+
+sellerEmailjava.lang.String*,
+
+__unknown_file (
+
+pricefloat*9
+
+__unknown_file (
+
+messagejava.lang.String2FaddEskaintza(Ljava/lang/Integer;Ljava/lang/String;FLjava/lang/String;)U
+S
+
+ê ê(Y
+successboolean"__id*+
+
+__unknown_file (
+
+%3booleaná
+Ñ
+
+ë ë(
+%4dataAccess.DataAccess"__id*S
+
+__unknown_file (7*5&
+$businesslogic.BLFacadeImplementation"
+	dbManager~|
+
+ë ë(
+
+%5void"dataAccess.DataAccess#close()V*9
+
+__unknown_file (
+
+%4dataAccess.DataAccess2close()""
+
+í í(
+
+successboolean:,
+
+é  é(2
+	eskaeraIdjava.lang.Integer:-
+
+é3 é(F
+sellerEmailjava.lang.String:
+
+éG é(S
+pricefloat:)
+
+éT é(b
+messagejava.lang.StringB(&
+$businesslogic.BLFacadeImplementationHX
