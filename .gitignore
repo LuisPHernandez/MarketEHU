@@ -2,3 +2,5 @@
 .scannerwork/
 sonar_token.txt
 coverage.xml
+/target/
+
