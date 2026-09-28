@@ -1,65 +1,0 @@
-
-Fbusinesslogic.BLFacadeImplementation#getClaimedSales()Ljava/util/List;C
-7src\main\java\businesslogic\BLFacadeImplementation.javaÉ! É(0"1*â
-1
-Ê Ê(‡
-„
-
-Ê Ê(
-%0dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager|z
-
-Ê Ê(
-
-%1void"dataAccess.DataAccess#open()V*9
-
-__unknown_file (
-
-%0dataAccess.DataAccess2open()‡
-„
-
-Ë Ë("
-%2dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager¬©
-
-Ë Ë(4
-%3java.util.List"7dataAccess.DataAccess#getClaimedSales()Ljava/util/List;*9
-
-__unknown_file (
-
-%2dataAccess.DataAccess2getClaimedSales()_
-]
-
-Ë Ë(5
-resjava.util.List"__id*2
-
-__unknown_file (
-
-%3java.util.List‡
-„
-
-Ì Ì(
-%4dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager~|
-
-Ì Ì(
-
-%5void"dataAccess.DataAccess#close()V*9
-
-__unknown_file (
-
-%4dataAccess.DataAccess2close()"%
-
-Í Í(
-
-resjava.util.ListB(&
-$businesslogic.BLFacadeImplementationH

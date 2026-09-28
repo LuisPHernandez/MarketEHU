@@ -1,126 +1,0 @@
-
-Pbusinesslogic.BLFacadeImplementation#resolveErreklamazioa(Ljava/lang/Integer;Z)ZC
-7src\main\java\businesslogic\BLFacadeImplementation.javaÏ Ï(2"startingBlock*æ
-startingBlock
-Ï2 Ï(V‹
-ˆ
-
-Ï Ï(
-%6"
-__annotate*)
-
-__unknown_file (
-	WebMethod*=
-
-__unknown_file (!
-
-
-saleNumberjava.lang.Integera
-_
-
-Ï; Ï(E
-
-saleNumberjava.lang.Integer"__annotation*"
-
-__unknown_file (
-
-%6|
-z
-
-Ï Ï(
-%7"
-__annotate*)
-
-__unknown_file (
-	WebMethod*/
-
-__unknown_file (
-
-acceptbooleanS
-Q
-
-ÏO Ï(U
-acceptboolean"__annotation*"
-
-__unknown_file (
-
-%7*
-1*Ù
-1
-Ð Ð(‡
-„
-
-Ð Ð(
-%0dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager|z
-
-Ð Ð(
-
-%1void"dataAccess.DataAccess#open()V*9
-
-__unknown_file (
-
-%0dataAccess.DataAccess2open()‡
-„
-
-Ñ Ñ(
-%2dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager¸µ
-
-Ñ Ñ(H
-%3boolean"AdataAccess.DataAccess#resolveErreklamazioa(Ljava/lang/Integer;Z)Z*9
-
-__unknown_file (
-
-%2dataAccess.DataAccess*=
-
-__unknown_file (!
-
-
-saleNumberjava.lang.Integer*/
-
-__unknown_file (
-
-acceptboolean2*resolveErreklamazioa(Ljava/lang/Integer;Z)Q
-O
-
-Ñ Ñ(I
-resboolean"__id*+
-
-__unknown_file (
-
-%3boolean‡
-„
-
-Ò Ò(
-%4dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager~|
-
-Ò Ò(
-
-%5void"dataAccess.DataAccess#close()V*9
-
-__unknown_file (
-
-%4dataAccess.DataAccess2close()"
-
-Ó Ó(
-
-resboolean:-
-
-Ï3 Ï(F
-
-saleNumberjava.lang.Integer:
-
-ÏG Ï(U
-acceptbooleanB(&
-$businesslogic.BLFacadeImplementationHX

@@ -1,122 +1,0 @@
-
-]businesslogic.BLFacadeImplementation#acceptEskaintza(Ljava/lang/Integer;Ljava/lang/Integer;)ZC
-7src\main\java\businesslogic\BLFacadeImplementation.java– –(""startingBlock*„
-startingBlock
-–" –(JŠ
-‡
-
-• •(
-%6"
-__annotate*)
-
-__unknown_file (
-	WebMethod*<
-
-__unknown_file ( 
-
-	eskaeraIdjava.lang.Integer`
-^
-
-–+ –(4
-	eskaeraIdjava.lang.Integer"__annotation*"
-
-__unknown_file (
-
-%6Œ
-‰
-
-• •(
-%7"
-__annotate*)
-
-__unknown_file (
-	WebMethod*>
-
-__unknown_file ("
- 
-eskaintzaIdjava.lang.Integerb
-`
-
-–> –(I 
-eskaintzaIdjava.lang.Integer"__annotation*"
-
-__unknown_file (
-
-%7*
-1*‰	
-1
-— —(‡
-„
-
-— —(
-%0dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager|z
-
-— —(
-
-%1void"dataAccess.DataAccess#open()V*9
-
-__unknown_file (
-
-%0dataAccess.DataAccess2open()‡
-„
-
-˜ ˜(#
-%2dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManageràÝ
-
-˜ ˜(K
-%3boolean"NdataAccess.DataAccess#acceptEskaintza(Ljava/lang/Integer;Ljava/lang/Integer;)Z*9
-
-__unknown_file (
-
-%2dataAccess.DataAccess*<
-
-__unknown_file ( 
-
-	eskaeraIdjava.lang.Integer*>
-
-__unknown_file ("
- 
-eskaintzaIdjava.lang.Integer27acceptEskaintza(Ljava/lang/Integer;Ljava/lang/Integer;)U
-S
-
-˜ ˜(L
-successboolean"__id*+
-
-__unknown_file (
-
-%3boolean‡
-„
-
-™ ™(
-%4dataAccess.DataAccess"__id*S
-
-__unknown_file (7*5&
-$businesslogic.BLFacadeImplementation"
-	dbManager~|
-
-™ ™(
-
-%5void"dataAccess.DataAccess#close()V*9
-
-__unknown_file (
-
-%4dataAccess.DataAccess2close()""
-
-š š(
-
-successboolean:,
-
-–# –(5
-	eskaeraIdjava.lang.Integer:.
-
-–6 –(I 
-eskaintzaIdjava.lang.IntegerB(&
-$businesslogic.BLFacadeImplementationHX
