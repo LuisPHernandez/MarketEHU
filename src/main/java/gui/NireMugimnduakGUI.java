@@ -86,54 +86,67 @@ public class NireMugimnduakGUI extends JFrame {
 		this.getContentPane().add(jButtonClose, null);
 
 		
-		btnJasota.setBounds(new Rectangle(330, 260, 270, 30));
-		btnJasota.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int row = tableProducts.getSelectedRow();
-				if (row == -1) {
-					JOptionPane.showMessageDialog(null, ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.ErrorSelectPurchase"));
-					return;
-				}
-				
-				String mota = (String) tableModelProducts.getValueAt(row, 0);
-				if (!mota.equals(ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.Compra"))) {
-					JOptionPane.showMessageDialog(null, ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.ErrorOnlyPurchases"));
-					return;
-				}
+        btnJasota.setBounds(new Rectangle(330, 260, 270, 30));
+        btnJasota.addActionListener(e -> confirmarRecepcion(loggedUserEmail));
+        this.getContentPane().add(btnJasota);
 
-				Sale selectedSale = (Sale) tableModelProducts.getValueAt(row, 4); 
+        ErosketakKargatu(loggedUserEmail);
+    }
 
-				if (selectedSale.getBidalketa() == null) {
-					JOptionPane.showMessageDialog(null, ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.ErrorNoShipping"));
-					return;
-				}
-				
-				if (selectedSale.getBidalketa().getEgoera().equals("JASOTA")) {
-					JOptionPane.showMessageDialog(null, ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.ErrorAlreadyReceived"));
-					return;
-				}
+	private void confirmarRecepcion(String loggedUserEmail) {
+	    int row = tableProducts.getSelectedRow();
 
-				try {
-					BLFacade facade = MainGUI.getBusinessLogic();
-					boolean ok = facade.confirmArrival(selectedSale.getSaleNumber());
-					
-					if (ok) {
-						JOptionPane.showMessageDialog(null, ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.SuccessDelivery"));
-						ErosketakKargatu(loggedUserEmail); 
-					} else {
-						JOptionPane.showMessageDialog(null, ResourceBundle.getBundle("Etiquetas").getString("NireErosketakGUI.ErrorConfirm"));
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-		});
-		this.getContentPane().add(btnJasota);
+	    if (row == -1) {
+	        JOptionPane.showMessageDialog(null,
+	            ResourceBundle.getBundle("Etiquetas")
+	                .getString("NireErosketakGUI.ErrorSelectPurchase"));
+	        return;
+	    }
 
-		
-		ErosketakKargatu(loggedUserEmail);
+	    String mota = (String) tableModelProducts.getValueAt(row, 0);
+
+	    if (!mota.equals(ResourceBundle.getBundle("Etiquetas")
+	            .getString("NireErosketakGUI.Compra"))) {
+	        JOptionPane.showMessageDialog(null,
+	            ResourceBundle.getBundle("Etiquetas")
+	                .getString("NireErosketakGUI.ErrorOnlyPurchases"));
+	        return;
+	    }
+
+	    Sale selectedSale = (Sale) tableModelProducts.getValueAt(row, 4);
+
+	    if (selectedSale.getBidalketa() == null) {
+	        JOptionPane.showMessageDialog(null,
+	            ResourceBundle.getBundle("Etiquetas")
+	                .getString("NireErosketakGUI.ErrorNoShipping"));
+	        return;
+	    }
+
+	    if (selectedSale.getBidalketa().getEgoera().equals("JASOTA")) {
+	        JOptionPane.showMessageDialog(null,
+	            ResourceBundle.getBundle("Etiquetas")
+	                .getString("NireErosketakGUI.ErrorAlreadyReceived"));
+	        return;
+	    }
+
+	    try {
+	        BLFacade facade = MainGUI.getBusinessLogic();
+	        boolean ok = facade.confirmArrival(selectedSale.getSaleNumber());
+
+	        if (ok) {
+	            JOptionPane.showMessageDialog(null,
+	                ResourceBundle.getBundle("Etiquetas")
+	                    .getString("NireErosketakGUI.SuccessDelivery"));
+	            ErosketakKargatu(loggedUserEmail);
+	        } else {
+	            JOptionPane.showMessageDialog(null,
+	                ResourceBundle.getBundle("Etiquetas")
+	                    .getString("NireErosketakGUI.ErrorConfirm"));
+	        }
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	    }
 	}
-
 	private void ErosketakKargatu (String email) {
 		try {
 			tableModelProducts.setDataVector(null, columnNamesProducts);

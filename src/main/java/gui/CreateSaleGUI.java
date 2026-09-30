@@ -26,6 +26,9 @@ import java.beans.PropertyChangeListener;
 import businesslogic.BLFacade;
 import configuration.UtilDate;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 public class CreateSaleGUI extends JFrame {
 	
     File targetFile;
@@ -53,6 +56,8 @@ public class CreateSaleGUI extends JFrame {
 	private Calendar calendarAnt = null;
 
 	private JScrollPane scrollPaneEvents = new JScrollPane();
+	
+	private static final Logger LOGGER = Logger.getLogger(CreateSaleGUI.class.getName());
 	
 	JComboBox<String> jComboBoxStatus = new JComboBox<String>();
 	DefaultComboBoxModel<String> statusOptions = new DefaultComboBoxModel<String>();
@@ -202,7 +207,7 @@ public class CreateSaleGUI extends JFrame {
 				    File outputfile = new File(basePath+targetFile.getName());
 
 				   ImageIO.write(img, "png", outputfile);  // ignore returned boolean
-				   System.out.println("file stored "+img);
+				   LOGGER.log(Level.INFO,"file stored {0}",img);
 				} catch(IOException ex) {
 				 //System.out.println("Write error for " + outputfile.getPath()  ": " + ex.getMessage());
 				  }
