@@ -2,83 +2,61 @@ import static org.junit.Assert.*;
 
 import java.util.Date;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import dataAccess.DataAccess;
 import domain.Salaketa;
 import domain.Sale;
-import domain.Seller;
+import testOperations.TestDataAccess;
 
-public class ReportSaleMockBlackTest {
+public class ReportSaleBDBlackTest {
 	// Sistema bajo prueba
-	private DataAccess sut;
-	
-	// Simulación de la BD
-	private MockedStatic<Persistence> persistenceMock;
-	@Mock
-	private EntityManagerFactory entityManagerFactory;
-	@Mock
-	private EntityManager db;
-	@Mock
-	private EntityTransaction et;
-	
-	// Datos del contexto
+	private static DataAccess sut = new DataAccess();
+
+	// Operaciones auxiliares
+	private static TestDataAccess testDA = new TestDataAccess();
+
+	// Objetos que crean los tests en la BD
+	private static final String OWNER_EMAIL = "vendedor@ehu.eus";
+	private static final String DEFAULT_USER_EMAIL = "lhernandez@ehu.eus";
+	private static final Integer DEFAULT_SALE_NUMBER = 100;
+
+	// Parámetros del caso
 	private String userEmail;
 	private Integer saleNumber;
 	private String reason;
-	private Seller seller;
-	private Seller owner;
-	private Sale sale;
 
 	@Before
 	public void setUp() {
-		// Crear los mocks
-		MockitoAnnotations.openMocks(this);
-		persistenceMock = Mockito.mockStatic(Persistence.class);
-		persistenceMock.when(
-		    () -> Persistence.createEntityManagerFactory(Mockito.any())
-		).thenReturn(entityManagerFactory);
-		Mockito.when(entityManagerFactory.createEntityManager())
-		       .thenReturn(db);
-		Mockito.when(db.getTransaction())
-		       .thenReturn(et);
-		
-		// Crear el SUT con la BD simulada
-		sut = new DataAccess(db);
-		
 		// Valores por defecto de los parámetros (caso válido)
-		userEmail = "lhernandez@ehu.eus";
-		saleNumber = 100;
+		userEmail = DEFAULT_USER_EMAIL;
+		saleNumber = DEFAULT_SALE_NUMBER;
 		reason = "motivo";
-		
-		// Objetos en memoria, el usuario que denuncia, el vendedor y su venta
-		seller = new Seller(userEmail, "Seller Test", "123");
-		owner = new Seller("vendedor@ehu.eus", "Vendedor Test", "123");
-		sale = owner.addSale("Balón", "balón de fútbol", 2, 10, new Date(), null);
-		sale.setSaleNumber(saleNumber);
-		
-		// Estado por defecto de la BD: usuario ∈ BD, vendedor ∈ BD y venta ∈ BD
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(seller);
-		Mockito.when(db.find(Seller.class, owner.getEmail())).thenReturn(owner);
-		Mockito.when(db.find(Sale.class, saleNumber)).thenReturn(sale);
+
+		// Estado por defecto de la BD, vendedor ∈ BD, usuario ∈ BD y venta 100 ∈ BD
+		testDA.open();
+		testDA.createSeller(OWNER_EMAIL, "Vendedor Test", "123");
+		testDA.createSeller(DEFAULT_USER_EMAIL, "Seller Test", "123");
+		testDA.createSale(OWNER_EMAIL, "Balón", "balón de fútbol", 2, 10, new Date(), DEFAULT_SALE_NUMBER);
+		testDA.close();
 	}
 
 	@After
 	public void tearDown() {
-		persistenceMock.close();
+		// Restaurar la BD a estado inicial
+		testDA.open();
+		if (userEmail != null && !userEmail.equals(DEFAULT_USER_EMAIL)) {
+			testDA.removeSeller(userEmail);
+		}
+		testDA.removeSeller(DEFAULT_USER_EMAIL);
+		testDA.removeSeller(OWNER_EMAIL);
+		testDA.removeSalaketak(1);
+		testDA.removeSalaketak(2);
+		testDA.close();
 	}
-
+	
 	@Test
 	// Caso 1, Clases 1, 3, 5, 7, 9, 11, 13, 15 (todas las válidas)
 	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
@@ -91,62 +69,70 @@ public class ReportSaleMockBlackTest {
 
 		// Salida
 		assertTrue(result);
-		
+
 		// Estado de la BD: la venta tiene 1 denuncia con los datos enviados
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertEquals(1, sale.getSalaketak().size());
 		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
 		assertEquals(userEmail, denuncia.getUserEmail());
 	}
-	
+
 	@Test
 	// Caso 2, Clase 2 (userEmail == null)
 	// usuario ∉ BD (no puede existir un Seller con email null), venta ∈ BD; userEmail=null, saleNumber=100, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test2() {
 		userEmail = null;
-		
+
 		// Llamar al sistema bajo prueba
 		sut.open();
 		boolean result = sut.reportSale(userEmail, saleNumber, reason);
 		sut.close();
-		
+
 		// Salida
 		assertFalse(result);
-		
+
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
-	
+
 	@Test
 	// Caso 3, Clase 4 (reason == null)
 	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason=null
 	// Resultado esperado: false y la venta no cambia
 	public void test3() {
 		reason = null;
-		
+
 		// Llamar al sistema bajo prueba
 		sut.open();
 		boolean result = sut.reportSale(userEmail, saleNumber, reason);
 		sut.close();
-		
+
 		// Salida
 		assertFalse(result);
-				
+
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
-	
+
 	@Test
 	// Caso 4, Clase 6 (saleNumber == null)
 	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test4() {
 		saleNumber = null;
-		
-		// La BD real lanza esta excepción al buscar con una clave null
-		Mockito.when(db.find(Sale.class, saleNumber))
-		       .thenThrow(new IllegalArgumentException("Unexpected null argument"));
+		testDA.open();
+		long salaketakBefore = testDA.countSalaketak();
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -156,8 +142,11 @@ public class ReportSaleMockBlackTest {
 		// Salida
 		assertFalse(result);
 
-		// Estado de la BD: no se ha añadido ninguna denuncia (la única venta de la BD no tiene denuncias)
-		assertTrue(sale.getSalaketak().isEmpty());
+		// Estado de la BD: no se ha añadido ninguna denuncia
+		testDA.open();
+		long salaketakAfter = testDA.countSalaketak();
+		testDA.close();
+		assertEquals(salaketakBefore, salaketakAfter);
 	}
 	
 	@Test
@@ -166,7 +155,9 @@ public class ReportSaleMockBlackTest {
 	// Resultado esperado: false y la venta no cambia
 	public void test5() {
 		userEmail = "hola";
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(new Seller(userEmail, "Seller Test", "123"));
+		testDA.open();
+		testDA.createSeller(userEmail, "Seller Test", "123");
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -177,16 +168,21 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
-	
+
 	@Test
 	// Caso 5.1, Valor límite de la clase 8: TLD de 1 letra
 	// usuario ∈ BD (email "a@ehu.e"), venta ∈ BD; userEmail="a@ehu.e", saleNumber=100, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test5_1() {
 		userEmail = "a@ehu.e";
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(new Seller(userEmail, "Seller Test", "123"));
+		testDA.open();
+		testDA.createSeller(userEmail, "Seller Test", "123");
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -197,6 +193,9 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 
@@ -206,7 +205,9 @@ public class ReportSaleMockBlackTest {
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test5_2() {
 		userEmail = "a@ehu.eu";
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(new Seller(userEmail, "Seller Test", "123"));
+		testDA.open();
+		testDA.createSeller(userEmail, "Seller Test", "123");
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -217,6 +218,9 @@ public class ReportSaleMockBlackTest {
 		assertTrue(result);
 
 		// Estado de la BD: la venta tiene 1 denuncia con los datos enviados
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertEquals(1, sale.getSalaketak().size());
 		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
@@ -229,7 +233,9 @@ public class ReportSaleMockBlackTest {
 	// Resultado esperado: false y la venta no cambia
 	public void test5_3() {
 		userEmail = "a.eus";
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(new Seller(userEmail, "Seller Test", "123"));
+		testDA.open();
+		testDA.createSeller(userEmail, "Seller Test", "123");
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -240,6 +246,9 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 
@@ -249,7 +258,9 @@ public class ReportSaleMockBlackTest {
 	// Resultado esperado: false y la venta no cambia
 	public void test5_4() {
 		userEmail = "a@@ehu.eus";
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(new Seller(userEmail, "Seller Test", "123"));
+		testDA.open();
+		testDA.createSeller(userEmail, "Seller Test", "123");
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -260,6 +271,9 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 
@@ -269,7 +283,9 @@ public class ReportSaleMockBlackTest {
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test5_5() {
 		userEmail = "a@ehu.eus";
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(new Seller(userEmail, "Seller Test", "123"));
+		testDA.open();
+		testDA.createSeller(userEmail, "Seller Test", "123");
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -280,13 +296,15 @@ public class ReportSaleMockBlackTest {
 		assertTrue(result);
 
 		// Estado de la BD: la venta tiene 1 denuncia con los datos enviados
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertEquals(1, sale.getSalaketak().size());
 		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
 		assertEquals(userEmail, denuncia.getUserEmail());
 	}
 
-	
 	@Test
 	// Caso 6, Clase 10 (reason vacío)
 	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason=""
@@ -303,9 +321,12 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
-	
+
 	@Test
 	// Caso 6.1, Valor límite de la clase 9: reason de longitud 1
 	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="a"
@@ -322,6 +343,9 @@ public class ReportSaleMockBlackTest {
 		assertTrue(result);
 
 		// Estado de la BD: la venta tiene 1 denuncia con los datos enviados
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertEquals(1, sale.getSalaketak().size());
 		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
@@ -344,21 +368,24 @@ public class ReportSaleMockBlackTest {
 		assertTrue(result);
 
 		// Estado de la BD: la venta tiene 1 denuncia con los datos enviados
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertEquals(1, sale.getSalaketak().size());
 		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
 		assertEquals(userEmail, denuncia.getUserEmail());
 	}
-	
+
 	@Test
 	// Caso 7, Clase 12 (saleNumber <= 0)
 	// usuario ∈ BD, venta ∈ BD (la venta -10); userEmail="lhernandez@ehu.eus", saleNumber=-10, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test7() {
 		saleNumber = -10;
-		Sale otherSale = owner.addSale("Raqueta", "raqueta de tenis", 2, 20, new Date(), null);
-		otherSale.setSaleNumber(saleNumber);
-		Mockito.when(db.find(Sale.class, saleNumber)).thenReturn(otherSale);
+		testDA.open();
+		testDA.createSale(OWNER_EMAIL, "Raqueta", "raqueta de tenis", 2, 20, new Date(), saleNumber);
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -369,7 +396,10 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta -10 no tiene denuncias
-		assertTrue(otherSale.getSalaketak().isEmpty());
+		testDA.open();
+		Sale sale = testDA.getSale(saleNumber);
+		testDA.close();
+		assertTrue(sale.getSalaketak().isEmpty());
 	}
 
 	@Test
@@ -377,9 +407,12 @@ public class ReportSaleMockBlackTest {
 	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber 0); userEmail="lhernandez@ehu.eus", saleNumber=0, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test7_1() {
-		// En la BD real no puede existir una Sale con saleNumber = 0, ObjectDB interpreta
+		// En la BD no puede existir una Sale con saleNumber = 0: ObjectDB interpreta
 		// el 0 como "sin número asignado" y genera uno
 		saleNumber = 0;
+		testDA.open();
+		long salaketakBefore = testDA.countSalaketak();
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -389,19 +422,19 @@ public class ReportSaleMockBlackTest {
 		// Salida
 		assertFalse(result);
 
-		// Estado de la BD: no se ha añadido ninguna denuncia (la única venta de la BD no tiene denuncias)
-		assertTrue(sale.getSalaketak().isEmpty());
+		// Estado de la BD: no se ha añadido ninguna denuncia
+		testDA.open();
+		long salaketakAfter = testDA.countSalaketak();
+		testDA.close();
+		assertEquals(salaketakBefore, salaketakAfter);
 	}
 
 	@Test
 	// Caso 7.2, Valor límite de la clase 11: saleNumber = 1
-	// usuario ∈ BD, venta ∈ BD (también la venta 1); userEmail="lhernandez@ehu.eus", saleNumber=1, reason="motivo"
+	// usuario ∈ BD, venta ∈ BD (la venta 1 de los datos iniciales); userEmail="lhernandez@ehu.eus", saleNumber=1, reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta 1
 	public void test7_2() {
 		saleNumber = 1;
-		Sale otherSale = owner.addSale("Raqueta", "raqueta de tenis", 2, 20, new Date(), null);
-		otherSale.setSaleNumber(saleNumber);
-		Mockito.when(db.find(Sale.class, saleNumber)).thenReturn(otherSale);
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -412,21 +445,21 @@ public class ReportSaleMockBlackTest {
 		assertTrue(result);
 
 		// Estado de la BD: la venta 1 tiene 1 denuncia con los datos enviados
-		assertEquals(1, otherSale.getSalaketak().size());
-		Salaketa denuncia = otherSale.getSalaketak().get(0);
+		testDA.open();
+		Sale sale = testDA.getSale(saleNumber);
+		testDA.close();
+		assertEquals(1, sale.getSalaketak().size());
+		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
 		assertEquals(userEmail, denuncia.getUserEmail());
 	}
 
 	@Test
 	// Caso 7.3, Valor límite de la clase 11: saleNumber = 2
-	// usuario ∈ BD, venta ∈ BD (también la venta 2); userEmail="lhernandez@ehu.eus", saleNumber=2, reason="motivo"
+	// usuario ∈ BD, venta ∈ BD (la venta 2 de los datos iniciales); userEmail="lhernandez@ehu.eus", saleNumber=2, reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta 2
 	public void test7_3() {
 		saleNumber = 2;
-		Sale otherSale = owner.addSale("Raqueta", "raqueta de tenis", 2, 20, new Date(), null);
-		otherSale.setSaleNumber(saleNumber);
-		Mockito.when(db.find(Sale.class, saleNumber)).thenReturn(otherSale);
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -437,8 +470,11 @@ public class ReportSaleMockBlackTest {
 		assertTrue(result);
 
 		// Estado de la BD: la venta 2 tiene 1 denuncia con los datos enviados
-		assertEquals(1, otherSale.getSalaketak().size());
-		Salaketa denuncia = otherSale.getSalaketak().get(0);
+		testDA.open();
+		Sale sale = testDA.getSale(saleNumber);
+		testDA.close();
+		assertEquals(1, sale.getSalaketak().size());
+		Salaketa denuncia = sale.getSalaketak().get(0);
 		assertEquals(reason, denuncia.getReason());
 		assertEquals(userEmail, denuncia.getUserEmail());
 	}
@@ -446,9 +482,12 @@ public class ReportSaleMockBlackTest {
 	@Test
 	// Caso 8, Clase 14 (venta ∉ BD)
 	// usuario ∈ BD, venta ∉ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
-	// Resultado esperado: false y la venta no cambia
+	// Resultado esperado: false y la BD no cambia
 	public void test8() {
-		Mockito.when(db.find(Sale.class, saleNumber)).thenReturn(null);
+		testDA.open();
+		testDA.removeSale(DEFAULT_SALE_NUMBER);
+		long salaketakBefore = testDA.countSalaketak();
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -458,8 +497,11 @@ public class ReportSaleMockBlackTest {
 		// Salida
 		assertFalse(result);
 
-		// Estado de la BD: no se ha añadido ninguna denuncia (la única venta de la BD no tiene denuncias)
-		assertTrue(sale.getSalaketak().isEmpty());
+		// Estado de la BD: no se ha añadido ninguna denuncia
+		testDA.open();
+		long salaketakAfter = testDA.countSalaketak();
+		testDA.close();
+		assertEquals(salaketakBefore, salaketakAfter);
 	}
 
 	@Test
@@ -467,7 +509,10 @@ public class ReportSaleMockBlackTest {
 	// usuario ∉ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test9() {
-		Mockito.when(db.find(Seller.class, userEmail)).thenReturn(null);
+		// Preparar: el usuario que denuncia no está en la BD
+		testDA.open();
+		testDA.removeSeller(DEFAULT_USER_EMAIL);
+		testDA.close();
 
 		// Llamar al sistema bajo prueba
 		sut.open();
@@ -478,6 +523,9 @@ public class ReportSaleMockBlackTest {
 		assertFalse(result);
 
 		// Estado de la BD: la venta no tiene denuncias
+		testDA.open();
+		Sale sale = testDA.getSale(DEFAULT_SALE_NUMBER);
+		testDA.close();
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 }
