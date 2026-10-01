@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>Market26-si2-is2</groupId>
-	<artifactId>Market26-si2-is2</artifactId>
+	<artifactId>luisphernandez_market</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<build>
@@ -46,12 +46,11 @@
 
 	<properties>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
-
-		<sonar.organization>jononekin</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.projectKey>jononekin_monopoly-euskara</sonar.projectKey>
-		<sonar.login>69f0b261f26fe8390be129e064c0bf84e7a4c3b1</sonar.login>
+
+		<sonar.organization>luisphernandez</sonar.organization>
+		<sonar.projectKey>luisphernandez_market</sonar.projectKey>
+		<sonar.token>f7f081e2691a627cfe373931cc4f3c18eda51d23</sonar.token>
 	</properties>
 
 	<dependencies>
