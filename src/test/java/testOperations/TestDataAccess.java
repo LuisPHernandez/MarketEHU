@@ -118,4 +118,10 @@ public class TestDataAccess {
 			db.getTransaction().commit();
 		}
 	}
+	
+	// Devuelve el número total de denuncias guardadas en la BD.
+	public long countSalaketak() {
+		return db.createQuery("SELECT COUNT(s) FROM Salaketa s", Long.class).getSingleResult();
+	}
+
 }
