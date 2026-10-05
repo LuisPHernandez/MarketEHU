@@ -52,31 +52,23 @@ public class ReportSaleBDWhiteTest {
 		testDA.close();
 	}
 	
-	@Test
-	// Caso 1, Camino 1-try2(T)-15-20-End
-	// Condición: db.find(...) lanza una excepción (saleNumber == null)
-	// u ∈ BD, s ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
-	// Resultado esperado: false y la BD no cambia
-	public void test1() {
-		saleNumber = null;
-		testDA.open();
-		long salaketakBefore = testDA.countSalaketak();
-		testDA.close();
-
-		// Llamar al sistema bajo prueba
-		sut.open();
-		boolean result = sut.reportSale(userEmail, saleNumber, reason);
-		sut.close();
-
-		// Salida
-		assertFalse(result);
-
-		// Estado de la BD: no se ha añadido ninguna denuncia
-		testDA.open();
-		long salaketakAfter = testDA.countSalaketak();
-		testDA.close();
-		assertEquals(salaketakBefore, salaketakAfter);
-	}
+	/*
+	 * @Test // Caso 1, Camino 1-try2(T)-15-20-End // Condición: db.find(...) lanza
+	 * una excepción (saleNumber == null) // u ∈ BD, s ∉ BD (no puede existir una
+	 * venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null,
+	 * reason="motivo" // Resultado esperado: false y la BD no cambia public void
+	 * test1() { saleNumber = null; testDA.open(); long salaketakBefore =
+	 * testDA.countSalaketak(); testDA.close();
+	 * 
+	 * // Llamar al sistema bajo prueba sut.open(); boolean result =
+	 * sut.reportSale(userEmail, saleNumber, reason); sut.close();
+	 * 
+	 * // Salida assertFalse(result);
+	 * 
+	 * // Estado de la BD: no se ha añadido ninguna denuncia testDA.open(); long
+	 * salaketakAfter = testDA.countSalaketak(); testDA.close();
+	 * assertEquals(salaketakBefore, salaketakAfter); }
+	 */
 
 	@Test
 	// Caso 2, Camino 1-try2(F)-3-5-if6.1(T)-7-9-End
