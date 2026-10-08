@@ -52,7 +52,8 @@ public class ReportSaleBDWhiteTest {
 		testDA.close();
 	}
 	
-	@Test
+
+	 @Test 
 	// Caso 1, Camino 1-try2(T)-15-20-End
 	// Condición: db.find(...) lanza una excepción (saleNumber == null)
 	// u ∈ BD, s ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
