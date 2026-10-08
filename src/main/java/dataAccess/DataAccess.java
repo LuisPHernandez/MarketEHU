@@ -717,51 +717,76 @@ public class DataAccess {
         }
     }
 
+    /**
+     * Acepta una oferta (Eskaintza) realizada por un vendedor sobre una solicitud (Eskaera)
+     * de un comprador, y formaliza la compra en una única transacción.
+     *
+     * Si se produce cualquier fallo, se hace rollback y la base de datos no se modifica.
+     *
+     * @param eskaeraId   identificador de la solicitud (Eskaera) a la que pertenece la oferta
+     * @param eskaintzaId identificador de la oferta (Eskaintza) que se desea aceptar
+     * @return {@code true} si la oferta se aceptó y la compra se registró correctamente;
+     *         {@code false} si la solicitud o la oferta no existen, la solicitud ya está cerrada,
+     *         el comprador no tiene saldo suficiente para pagar el precio, o se produce
+     *         una excepción durante la transacción
+     */
     public boolean acceptEskaintza(Integer eskaeraId, Integer eskaintzaId) {
         try {
+            // Todas las modificaciones se hacen en una única transacción:
+            // o se aplican todas, o ninguna (rollback).
             db.getTransaction().begin();
             
+            // 1. Recuperar la solicitud y la oferta de la base de datos
             Eskaera eskaera = db.find(Eskaera.class, eskaeraId);
             Eskaintza eskaintza = db.find(Eskaintza.class, eskaintzaId);
             
+            // 2. Validaciones: ambas deben existir y la solicitud debe seguir abierta
             if (eskaera == null || eskaintza == null || eskaera.isClosed()) {
                 db.getTransaction().rollback();
                 return false;
             }
 
+            // El comprador es quien creó la solicitud; el vendedor, quien hizo la oferta
             Seller buyer = eskaera.getBuyer();
             Seller seller = eskaintza.getSeller();
             float price = eskaintza.getPrice();
 
+            // 3. Comprobar que el comprador tiene saldo suficiente para pagar la oferta
             if (buyer.getMoney() < price) {
                 db.getTransaction().rollback();
                 return false; 
             }
 
+            // 4. Cobro: se descuenta el precio del saldo del comprador
             buyer.addMoney(-price);
        
+            // 5. Cerrar la solicitud para que no se acepten más ofertas
             eskaera.setClosed(true);
 
+            // 6. Crear la venta en el vendedor a partir de los datos de la solicitud y la oferta
+            //    (cantidad 1, fecha actual, sin imagen)
             String tituloSale = "[Eskaera] " + eskaera.getTitle();
             String descSale = eskaintza.getMessage();
             
             Sale transaccion = seller.addSale(tituloSale, descSale, 1, price, new java.util.Date(), null);
+            // Asociar la venta al comprador y añadirla a su lista de compras
             transaccion.setBuyer(buyer);
             buyer.addPurchasedSale(transaccion);
             
+            // 7. Crear el envío asociado a la venta
             Bidalketa bidalketa = new Bidalketa(transaccion);
             transaccion.setBidalketa(bidalketa);
             
             db.persist(bidalketa);
             db.persist(transaccion);
 
-         
+            // 8. Registrar el movimiento de pago del comprador, vinculado a la solicitud y la oferta
             Mugimenduak mugimendu = new Mugimenduak("ESKAINTZA_ORDAINKETA", new java.util.Date(), buyer);
             mugimendu.setEskaera(eskaera);
             mugimendu.setEskaintza(eskaintza);
             db.persist(mugimendu);
-            // --------------------------------------------
 
+            // 9. Guardar los cambios de las entidades modificadas y confirmar la transacción
             db.merge(buyer);
             db.merge(seller);
             db.merge(eskaera);
@@ -769,6 +794,7 @@ public class DataAccess {
             db.getTransaction().commit();
             return true;
         } catch (Exception e) {
+            // Ante cualquier error se deshacen todos los cambios
             e.printStackTrace();
             db.getTransaction().rollback();
             return false;

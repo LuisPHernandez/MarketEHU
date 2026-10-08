@@ -13,6 +13,10 @@ import configuration.ConfigXML;
 import domain.Salaketa;
 import domain.Sale;
 import domain.Seller;
+import domain.Eskaera;
+import domain.Eskaintza;
+import domain.Mugimenduak;
+import domain.Bidalketa;
 
 public class TestDataAccess {
 	protected EntityManager db;
@@ -122,6 +126,221 @@ public class TestDataAccess {
 	// Devuelve el número total de denuncias guardadas en la BD.
 	public long countSalaketak() {
 		return db.createQuery("SELECT COUNT(s) FROM Salaketa s", Long.class).getSingleResult();
+	}
+	
+	//prepara la oferta en bd 
+	public Integer[] prepararEskaintza(
+	        String buyerEmail,
+	        String sellerEmail,
+	        float saldo,
+	        float precio) {
+
+	    db.getTransaction().begin();
+
+	    try {
+	        Seller buyer = new Seller(buyerEmail, "Comprador Test", "123");
+	        buyer.setMoney(saldo);
+
+	        Seller seller = new Seller(sellerEmail, "Vendedor Test", "123");
+
+	        Eskaera pedido = new Eskaera(
+	                "Bicicleta", "Busco una bicicleta", buyer);
+
+	        Eskaintza oferta = new Eskaintza(
+	                precio, "Vendo bicicleta", seller, pedido);
+
+	        pedido.addEskaintza(oferta);
+
+	        db.persist(buyer);
+	        db.persist(seller);
+	        db.persist(pedido);
+	        db.persist(oferta);
+
+	        db.getTransaction().commit();
+
+	        return new Integer[] {
+	            pedido.getId(),
+	            oferta.getId()
+	        };
+
+	    } catch (RuntimeException e) {
+	        if (db.getTransaction().isActive()) {
+	            db.getTransaction().rollback();
+	        }
+	        throw e;
+	    }
+	}
+	public void limpiarEskaintza(
+	        Integer eskaeraId,
+	        Integer eskaintzaId,
+	        String buyerEmail,
+	        String sellerEmail) {
+
+	    // Si la preparación falló, no tenemos un escenario que limpiar.
+	    if (eskaeraId == null || eskaintzaId == null) {
+	        return;
+	    }
+
+	    db.getTransaction().begin();
+
+	    try {
+	        Eskaera pedido = db.find(Eskaera.class, eskaeraId);
+	        Eskaintza oferta = db.find(Eskaintza.class, eskaintzaId);
+	        Seller buyer = db.find(Seller.class, buyerEmail);
+	        Seller seller = db.find(Seller.class, sellerEmail);
+
+	        // Eliminar los movimientos asociados al pedido.
+	        if (pedido != null) {
+	            for (Mugimenduak movimiento : db.createQuery(
+	                    "SELECT m FROM Mugimenduak m WHERE m.eskaera = :pedido",
+	                    Mugimenduak.class)
+	                    .setParameter("pedido", pedido)
+	                    .getResultList()) {
+
+	                if (movimiento.getSeller() != null) {
+	                    movimiento.getSeller().getMovements().remove(movimiento);
+	                }
+
+	                db.remove(movimiento);
+	            }
+	        }
+
+	        //  Eliminar las ventas del vendedor exclusivo de esta prueba.
+	        if (seller != null) {
+	            for (Sale venta : new ArrayList<Sale>(seller.getSales())) {
+
+	                if (venta.getBuyer() != null) {
+	                    venta.getBuyer().getPurchasedSales().remove(venta);
+	                }
+
+	                seller.removeSale(venta);
+
+	                // Sale tiene cascade=ALL hacia Bidalketa:
+	                // al eliminar la venta también se elimina el envío.
+	                db.remove(venta);
+	            }
+	        }
+
+	        // Desvincular y eliminar la oferta.
+	        if (pedido != null) {
+	            pedido.getEskaintzak().clear();
+	        }
+
+	        if (oferta != null) {
+	            oferta.setEskaera(null);
+	            db.remove(oferta);
+	        }
+
+	        // Eliminar el pedido.
+	        if (pedido != null) {
+	            db.remove(pedido);
+	        }
+
+	        // Eliminar los usuarios exclusivos de la prueba.
+	        if (buyer != null) {
+	            db.remove(buyer);
+	        }
+
+	        if (seller != null) {
+	            db.remove(seller);
+	        }
+
+	        db.getTransaction().commit();
+
+	    } catch (RuntimeException e) {
+	        if (db.getTransaction().isActive()) {
+	            db.getTransaction().rollback();
+	        }
+	        throw e;
+	    }
+	}
+	
+	public void setPedidoCerrado(Integer id, boolean cerrado) {
+	    db.getTransaction().begin();
+
+	    try {
+	        Eskaera pedido = db.find(Eskaera.class, id);
+
+	        if (pedido == null) {
+	            throw new IllegalArgumentException("El pedido no existe");
+	        }
+
+	        pedido.setClosed(cerrado);
+	        db.getTransaction().commit();
+
+	    } catch (RuntimeException e) {
+	        if (db.getTransaction().isActive()) {
+	            db.getTransaction().rollback();
+	        }
+	        throw e;
+	    }
+	}
+
+	public Eskaera getEskaera(Integer id) {
+	    return db.find(Eskaera.class, id);
+	}
+
+	public Seller getSeller(String email) {
+	    return db.find(Seller.class, email);
+	}
+
+	public long countMovimientosEskaera(Integer id) {
+	    return db.createQuery(
+	            "SELECT COUNT(m) FROM Mugimenduak m WHERE m.eskaera.id = :id",
+	            Long.class)
+	            .setParameter("id", id)
+	            .getSingleResult();
+	}
+	public void setSaldo(String email, float saldo) {
+	    db.getTransaction().begin();
+
+	    try {
+	        Seller seller = db.find(Seller.class, email);
+
+	        if (seller == null) {
+	            throw new IllegalArgumentException("El usuario no existe");
+	        }
+
+	        seller.setMoney(saldo);
+	        db.getTransaction().commit();
+
+	    } catch (RuntimeException e) {
+	        if (db.getTransaction().isActive()) {
+	            db.getTransaction().rollback();
+	        }
+	        throw e;
+	    }
+	}
+	public java.util.List<Mugimenduak> getMovimientosEskaera(Integer id) {
+	    return db.createQuery(
+	            "SELECT m FROM Mugimenduak m WHERE m.eskaera.id = :id",
+	            Mugimenduak.class)
+	            .setParameter("id", id)
+	            .getResultList();
+	}
+	
+	public Integer getIdPedidoInexistente() {
+	    int id = -1;
+
+	    while (db.find(Eskaera.class, id) != null) {
+	        id--;
+	    }
+
+	    return id;
+	}
+	
+	public Integer getIdOfertaInexistente() {
+	    int id = -1;
+
+	    while (db.find(Eskaintza.class, id) != null) {
+	        id--;
+	    }
+
+	    return id;
+	}
+
+	public Eskaintza getEskaintza(Integer id) {
+	    return db.find(Eskaintza.class, id);
 	}
 
 }

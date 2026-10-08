@@ -1,4 +1,4 @@
-package dataAccess;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import dataAccess.DataAccess;
 import domain.Bidalketa;
 import domain.Eskaera;
 import domain.Eskaintza;
