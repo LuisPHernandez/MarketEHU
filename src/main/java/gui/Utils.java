@@ -13,7 +13,8 @@ public class Utils {
 			return new ArrayList<String>(Arrays.asList("Nuevo","Muy Bueno","Aceptable","Lo ha dado todo"));
 		if (lang.compareTo("eus")==0) 
 			return new ArrayList<String>(Arrays.asList("Berria","Oso Ona","Egokia","Oso zaharra"));
-		return null;
+		return new ArrayList<String>(Arrays.asList("New","Very Good","Acceptable","Very Used"));
+
 	}
 	public static String getStatus(int t) {
 		ArrayList<String> status=getStatus();

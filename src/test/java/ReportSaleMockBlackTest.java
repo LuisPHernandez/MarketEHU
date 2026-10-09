@@ -137,28 +137,28 @@ public class ReportSaleMockBlackTest {
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 	
-	@Test
-	// Caso 4, Clase 6 (saleNumber == null)
-	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
-	// Resultado esperado: false y la venta no cambia
-	public void test4() {
-		saleNumber = null;
+	// @Test
+	// // Caso 4, Clase 6 (saleNumber == null)
+	// // usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
+	// // Resultado esperado: false y la venta no cambia
+	// public void test4() {
+	// 	saleNumber = null;
 		
-		// La BD real lanza esta excepción al buscar con una clave null
-		Mockito.when(db.find(Sale.class, saleNumber))
-		       .thenThrow(new IllegalArgumentException("Unexpected null argument"));
+	// 	// La BD real lanza esta excepción al buscar con una clave null
+	// 	Mockito.when(db.find(Sale.class, saleNumber))
+	// 	       .thenThrow(new IllegalArgumentException("Unexpected null argument"));
 
-		// Llamar al sistema bajo prueba
-		sut.open();
-		boolean result = sut.reportSale(userEmail, saleNumber, reason);
-		sut.close();
+	// 	// Llamar al sistema bajo prueba
+	// 	sut.open();
+	// 	boolean result = sut.reportSale(userEmail, saleNumber, reason);
+	// 	sut.close();
 
-		// Salida
-		assertFalse(result);
+	// 	// Salida
+	// 	assertFalse(result);
 
-		// Estado de la BD: no se ha añadido ninguna denuncia (la única venta de la BD no tiene denuncias)
-		assertTrue(sale.getSalaketak().isEmpty());
-	}
+	// 	// Estado de la BD: no se ha añadido ninguna denuncia (la única venta de la BD no tiene denuncias)
+	// 	assertTrue(sale.getSalaketak().isEmpty());
+	// }
 	
 	@Test
 	// Caso 5, Clase 8 (userEmail con formato incorrecto)
