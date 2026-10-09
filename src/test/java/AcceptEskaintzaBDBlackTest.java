@@ -1,5 +1,7 @@
 import static org.junit.Assert.*;
 
+import java.util.Date;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +33,7 @@ public class AcceptEskaintzaBDBlackTest {
     // IDs generados al guardar el pedido y la oferta.
     private Integer eskaeraId;
     private Integer eskaintzaId;
-      
+
     @Before
     public void setUp() {
         testDA.open();
@@ -50,7 +52,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
     @After
     public void tearDown() {
         if (eskaeraId == null || eskaintzaId == null) {
@@ -69,7 +71,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
     @Test
     public void pedidoCerrado() {
         // PREPARAR
@@ -80,7 +82,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
 
-        //sobre la BD 
+        // sobre la BD
         boolean resultado;
 
         sut.open();
@@ -93,7 +95,7 @@ public class AcceptEskaintzaBDBlackTest {
         // verificar salida FALSE
         assertFalse(resultado);
 
-        //comprobar el estado guardado en una nueva sesión.
+        // comprobar el estado guardado en una nueva sesión.
         testDA.open();
         try {
             Eskaera pedido = testDA.getEskaera(eskaeraId);
@@ -117,55 +119,55 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
-    
+
     @Test
     public void saldoInsuficiente() {
-    	testDA.open();
-    	try {
-    		testDA.setSaldo(DEFAULT_USER_EMAIL,90f);
-    	}finally {
-    		testDA.close();
-    	}
-    	
-    	boolean resultado;
-    	
-    	sut.open();
-    	try{
-    		resultado = sut.acceptEskaintza(eskaeraId,eskaintzaId);
-    	}finally {
-    		sut.close();
-    	}
-    	//verificamos que no fuera aceptada
-    	assertFalse(resultado);
-    	
-    	  testDA.open();
-          try {
-              Eskaera pedido = testDA.getEskaera(eskaeraId);
-              Seller buyer = testDA.getSeller(DEFAULT_USER_EMAIL);
-              Seller seller = testDA.getSeller(SELLER_EMAIL);
+        testDA.open();
+        try {
+            testDA.setSaldo(DEFAULT_USER_EMAIL, 90f);
+        } finally {
+            testDA.close();
+        }
 
-              assertNotNull(pedido);
-              assertNotNull(buyer);
-              assertNotNull(seller);
+        boolean resultado;
 
-              assertFalse(pedido.isClosed());
-              assertEquals(90f, buyer.getMoney(), 0.001f);
-              assertEquals(0f, seller.getMoney(), 0.001f);
+        sut.open();
+        try {
+            resultado = sut.acceptEskaintza(eskaeraId, eskaintzaId);
+        } finally {
+            sut.close();
+        }
+        // verificamos que no fuera aceptada
+        assertFalse(resultado);
 
-              assertTrue(buyer.getPurchasedSales().isEmpty());
-              assertTrue(seller.getSales().isEmpty());
+        testDA.open();
+        try {
+            Eskaera pedido = testDA.getEskaera(eskaeraId);
+            Seller buyer = testDA.getSeller(DEFAULT_USER_EMAIL);
+            Seller seller = testDA.getSeller(SELLER_EMAIL);
 
-              assertEquals(0L, testDA.countMovimientosEskaera(eskaeraId));
+            assertNotNull(pedido);
+            assertNotNull(buyer);
+            assertNotNull(seller);
 
-          } finally {
-              testDA.close();
-       }
+            assertFalse(pedido.isClosed());
+            assertEquals(90f, buyer.getMoney(), 0.001f);
+            assertEquals(0f, seller.getMoney(), 0.001f);
+
+            assertTrue(buyer.getPurchasedSales().isEmpty());
+            assertTrue(seller.getSales().isEmpty());
+
+            assertEquals(0L, testDA.countMovimientosEskaera(eskaeraId));
+
+        } finally {
+            testDA.close();
+        }
     }
+
     @Test
     public void compraCorrecta() {
-        //el @Before ya dejó el escenario válido.
-     
+        // el @Before ya dejó el escenario válido.
+
         boolean resultado;
 
         sut.open();
@@ -177,7 +179,7 @@ public class AcceptEskaintzaBDBlackTest {
 
         assertTrue(resultado);
 
-        // 
+        //
         testDA.open();
         try {
             Eskaera pedido = testDA.getEskaera(eskaeraId);
@@ -229,8 +231,7 @@ public class AcceptEskaintzaBDBlackTest {
                     envio.getSale().getSaleNumber());
 
             // Movimiento de pago.
-            java.util.List<Mugimenduak> movimientos =
-                    testDA.getMovimientosEskaera(eskaeraId);
+            java.util.List<Mugimenduak> movimientos = testDA.getMovimientosEskaera(eskaeraId);
 
             assertEquals(1, movimientos.size());
 
@@ -252,11 +253,12 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
+
     @Test
     public void pedidoNoExiste() {
         Integer idInexistente;
 
-        //obtener un ID que no existe.
+        // obtener un ID que no existe.
         testDA.open();
         try {
             idInexistente = testDA.getIdPedidoInexistente();
@@ -265,7 +267,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
 
-        //pedido inexistente y oferta existente.
+        // pedido inexistente y oferta existente.
         boolean resultado;
 
         sut.open();
@@ -277,7 +279,7 @@ public class AcceptEskaintzaBDBlackTest {
 
         assertFalse(resultado);
 
-        //los datos preparados permanecen sin cambios.
+        // los datos preparados permanecen sin cambios.
         testDA.open();
         try {
             assertNull(testDA.getEskaera(idInexistente));
@@ -303,12 +305,12 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
     @Test
     public void ofertaNoExiste() {
         Integer idInexistente;
 
-        //obtener un ID que no existe.
+        // obtener un ID que no existe.
         testDA.open();
         try {
             idInexistente = testDA.getIdOfertaInexistente();
@@ -317,7 +319,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
 
-        //oferta inexistente y pedidov existente.
+        // oferta inexistente y pedidov existente.
         boolean resultado;
 
         sut.open();
@@ -329,7 +331,7 @@ public class AcceptEskaintzaBDBlackTest {
 
         assertFalse(resultado);
 
-        //los datos preparados permanecen sin cambios.
+        // los datos preparados permanecen sin cambios.
         testDA.open();
         try {
             assertNull(testDA.getEskaintza(idInexistente));
@@ -355,7 +357,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
     @Test
     public void pedidoIdNulo() {
         boolean resultado;
@@ -371,7 +373,7 @@ public class AcceptEskaintzaBDBlackTest {
         // El método debe capturar la excepción y devolver false.
         assertFalse(resultado);
 
-        //verificar que los datos preparados no han cambiado.
+        // verificar que los datos preparados no han cambiado.
         testDA.open();
         try {
             Eskaera pedido = testDA.getEskaera(eskaeraId);
@@ -395,7 +397,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
     @Test
     public void ofertaIdNulo() {
         boolean resultado;
@@ -437,53 +439,53 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
-    //pruebas valores limites
-    
+
+    // pruebas valores limites
+
     @Test
     public void saldoJustoPorDebajo() {
-    	testDA.open();
-    	try {
-    		testDA.setSaldo(DEFAULT_USER_EMAIL,99.99f);
-    	}finally {
-    		testDA.close();
-    	}
-    	
-    	boolean resultado;
-    	
-    	sut.open();
-    	try{
-    		resultado = sut.acceptEskaintza(eskaeraId,eskaintzaId);
-    	}finally {
-    		sut.close();
-    	}
-    	//verificamos que no fuera aceptada
-    	assertFalse(resultado);
-    	
-    	  testDA.open();
-          try {
-              Eskaera pedido = testDA.getEskaera(eskaeraId);
-              Seller buyer = testDA.getSeller(DEFAULT_USER_EMAIL);
-              Seller seller = testDA.getSeller(SELLER_EMAIL);
+        testDA.open();
+        try {
+            testDA.setSaldo(DEFAULT_USER_EMAIL, 99.99f);
+        } finally {
+            testDA.close();
+        }
 
-              assertNotNull(pedido);
-              assertNotNull(buyer);
-              assertNotNull(seller);
+        boolean resultado;
 
-              assertFalse(pedido.isClosed());
-              assertEquals(99.99f, buyer.getMoney(), 0.001f);
-              assertEquals(0f, seller.getMoney(), 0.001f);
+        sut.open();
+        try {
+            resultado = sut.acceptEskaintza(eskaeraId, eskaintzaId);
+        } finally {
+            sut.close();
+        }
+        // verificamos que no fuera aceptada
+        assertFalse(resultado);
 
-              assertTrue(buyer.getPurchasedSales().isEmpty());
-              assertTrue(seller.getSales().isEmpty());
+        testDA.open();
+        try {
+            Eskaera pedido = testDA.getEskaera(eskaeraId);
+            Seller buyer = testDA.getSeller(DEFAULT_USER_EMAIL);
+            Seller seller = testDA.getSeller(SELLER_EMAIL);
 
-              assertEquals(0L, testDA.countMovimientosEskaera(eskaeraId));
+            assertNotNull(pedido);
+            assertNotNull(buyer);
+            assertNotNull(seller);
 
-          } finally {
-              testDA.close();
-       }
+            assertFalse(pedido.isClosed());
+            assertEquals(99.99f, buyer.getMoney(), 0.001f);
+            assertEquals(0f, seller.getMoney(), 0.001f);
+
+            assertTrue(buyer.getPurchasedSales().isEmpty());
+            assertTrue(seller.getSales().isEmpty());
+
+            assertEquals(0L, testDA.countMovimientosEskaera(eskaeraId));
+
+        } finally {
+            testDA.close();
+        }
     }
-    
+
     @Test
     public void saldoExactoAlPrecio() {
         testDA.open();
@@ -517,7 +519,7 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
     @Test
     public void saldoJustoPorEncima() {
         testDA.open();
@@ -551,5 +553,5 @@ public class AcceptEskaintzaBDBlackTest {
             testDA.close();
         }
     }
-    
+
 }
