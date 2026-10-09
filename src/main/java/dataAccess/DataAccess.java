@@ -281,9 +281,6 @@ public class DataAccess {
             db.persist(mugimendu);
             // --------------------------------
 
-            db.merge(sale);
-            db.merge(buyer);
-
             db.getTransaction().commit();
             return true;
         } catch (Exception e) {
