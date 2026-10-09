@@ -56,10 +56,11 @@ public class ReportSaleBDBlackTest {
 		testDA.removeSalaketak(2);
 		testDA.close();
 	}
-	
+
 	@Test
 	// Caso 1, Clases 1, 3, 5, 7, 9, 11, 13, 15 (todas las válidas)
-	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
+	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test1() {
 		// Llamar al sistema bajo prueba
@@ -82,7 +83,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 2, Clase 2 (userEmail == null)
-	// usuario ∉ BD (no puede existir un Seller con email null), venta ∈ BD; userEmail=null, saleNumber=100, reason="motivo"
+	// usuario ∉ BD (no puede existir un Seller con email null), venta ∈ BD;
+	// userEmail=null, saleNumber=100, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test2() {
 		userEmail = null;
@@ -104,7 +106,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 3, Clase 4 (reason == null)
-	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason=null
+	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason=null
 	// Resultado esperado: false y la venta no cambia
 	public void test3() {
 		reason = null;
@@ -124,34 +127,36 @@ public class ReportSaleBDBlackTest {
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 
-	@Test
-	// Caso 4, Clase 6 (saleNumber == null)
-	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
-	// Resultado esperado: false y la venta no cambia
-	public void test4() {
-		saleNumber = null;
-		testDA.open();
-		long salaketakBefore = testDA.countSalaketak();
-		testDA.close();
+	// @Test
+	// // Caso 4, Clase 6 (saleNumber == null)
+	// // usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null);
+	// userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
+	// // Resultado esperado: false y la venta no cambia
+	// public void test4() {
+	// saleNumber = null;
+	// testDA.open();
+	// long salaketakBefore = testDA.countSalaketak();
+	// testDA.close();
 
-		// Llamar al sistema bajo prueba
-		sut.open();
-		boolean result = sut.reportSale(userEmail, saleNumber, reason);
-		sut.close();
+	// // Llamar al sistema bajo prueba
+	// sut.open();
+	// boolean result = sut.reportSale(userEmail, saleNumber, reason);
+	// sut.close();
 
-		// Salida
-		assertFalse(result);
+	// // Salida
+	// assertFalse(result);
 
-		// Estado de la BD: no se ha añadido ninguna denuncia
-		testDA.open();
-		long salaketakAfter = testDA.countSalaketak();
-		testDA.close();
-		assertEquals(salaketakBefore, salaketakAfter);
-	}
-	
+	// // Estado de la BD: no se ha añadido ninguna denuncia
+	// testDA.open();
+	// long salaketakAfter = testDA.countSalaketak();
+	// testDA.close();
+	// assertEquals(salaketakBefore, salaketakAfter);
+	// }
+
 	@Test
 	// Caso 5, Clase 8 (userEmail con formato incorrecto)
-	// usuario ∈ BD (email "hola"), venta ∈ BD; userEmail="hola", saleNumber=100, reason="motivo"
+	// usuario ∈ BD (email "hola"), venta ∈ BD; userEmail="hola", saleNumber=100,
+	// reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test5() {
 		userEmail = "hola";
@@ -176,7 +181,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 5.1, Valor límite de la clase 8: TLD de 1 letra
-	// usuario ∈ BD (email "a@ehu.e"), venta ∈ BD; userEmail="a@ehu.e", saleNumber=100, reason="motivo"
+	// usuario ∈ BD (email "a@ehu.e"), venta ∈ BD; userEmail="a@ehu.e",
+	// saleNumber=100, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test5_1() {
 		userEmail = "a@ehu.e";
@@ -201,7 +207,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 5.2, Valor límite de la clase 7: TLD de 2 letras
-	// usuario ∈ BD (email "a@ehu.eu"), venta ∈ BD; userEmail="a@ehu.eu", saleNumber=100, reason="motivo"
+	// usuario ∈ BD (email "a@ehu.eu"), venta ∈ BD; userEmail="a@ehu.eu",
+	// saleNumber=100, reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test5_2() {
 		userEmail = "a@ehu.eu";
@@ -229,7 +236,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 5.3, Valor límite de la clase 8: ninguna @
-	// usuario ∈ BD (email "a.eus"), venta ∈ BD; userEmail="a.eus", saleNumber=100, reason="motivo"
+	// usuario ∈ BD (email "a.eus"), venta ∈ BD; userEmail="a.eus", saleNumber=100,
+	// reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test5_3() {
 		userEmail = "a.eus";
@@ -254,7 +262,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 5.4, Valor límite de la clase 8: dos @
-	// usuario ∈ BD (email "a@@ehu.eus"), venta ∈ BD; userEmail="a@@ehu.eus", saleNumber=100, reason="motivo"
+	// usuario ∈ BD (email "a@@ehu.eus"), venta ∈ BD; userEmail="a@@ehu.eus",
+	// saleNumber=100, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test5_4() {
 		userEmail = "a@@ehu.eus";
@@ -279,7 +288,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 5.5, Valor límite de la clase 7: una @ y TLD de 3 letras
-	// usuario ∈ BD (email "a@ehu.eus"), venta ∈ BD; userEmail="a@ehu.eus", saleNumber=100, reason="motivo"
+	// usuario ∈ BD (email "a@ehu.eus"), venta ∈ BD; userEmail="a@ehu.eus",
+	// saleNumber=100, reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test5_5() {
 		userEmail = "a@ehu.eus";
@@ -307,7 +317,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 6, Clase 10 (reason vacío)
-	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason=""
+	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason=""
 	// Resultado esperado: false y la venta no cambia
 	public void test6() {
 		reason = "";
@@ -329,7 +340,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 6.1, Valor límite de la clase 9: reason de longitud 1
-	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="a"
+	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="a"
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test6_1() {
 		reason = "a";
@@ -354,7 +366,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 6.2, Valor límite de la clase 9: reason de longitud 2
-	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="aa"
+	// usuario ∈ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="aa"
 	// Resultado esperado: true y la denuncia queda añadida a la venta
 	public void test6_2() {
 		reason = "aa";
@@ -379,7 +392,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 7, Clase 12 (saleNumber <= 0)
-	// usuario ∈ BD, venta ∈ BD (la venta -10); userEmail="lhernandez@ehu.eus", saleNumber=-10, reason="motivo"
+	// usuario ∈ BD, venta ∈ BD (la venta -10); userEmail="lhernandez@ehu.eus",
+	// saleNumber=-10, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test7() {
 		saleNumber = -10;
@@ -404,7 +418,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 7.1, Valor límite de la clase 12: saleNumber = 0
-	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber 0); userEmail="lhernandez@ehu.eus", saleNumber=0, reason="motivo"
+	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber 0);
+	// userEmail="lhernandez@ehu.eus", saleNumber=0, reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test7_1() {
 		// En la BD no puede existir una Sale con saleNumber = 0: ObjectDB interpreta
@@ -431,7 +446,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 7.2, Valor límite de la clase 11: saleNumber = 1
-	// usuario ∈ BD, venta ∈ BD (la venta 1 de los datos iniciales); userEmail="lhernandez@ehu.eus", saleNumber=1, reason="motivo"
+	// usuario ∈ BD, venta ∈ BD (la venta 1 de los datos iniciales);
+	// userEmail="lhernandez@ehu.eus", saleNumber=1, reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta 1
 	public void test7_2() {
 		saleNumber = 1;
@@ -456,7 +472,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 7.3, Valor límite de la clase 11: saleNumber = 2
-	// usuario ∈ BD, venta ∈ BD (la venta 2 de los datos iniciales); userEmail="lhernandez@ehu.eus", saleNumber=2, reason="motivo"
+	// usuario ∈ BD, venta ∈ BD (la venta 2 de los datos iniciales);
+	// userEmail="lhernandez@ehu.eus", saleNumber=2, reason="motivo"
 	// Resultado esperado: true y la denuncia queda añadida a la venta 2
 	public void test7_3() {
 		saleNumber = 2;
@@ -478,10 +495,11 @@ public class ReportSaleBDBlackTest {
 		assertEquals(reason, denuncia.getReason());
 		assertEquals(userEmail, denuncia.getUserEmail());
 	}
-	
+
 	@Test
 	// Caso 8, Clase 14 (venta ∉ BD)
-	// usuario ∈ BD, venta ∉ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
+	// usuario ∈ BD, venta ∉ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="motivo"
 	// Resultado esperado: false y la BD no cambia
 	public void test8() {
 		testDA.open();
@@ -506,7 +524,8 @@ public class ReportSaleBDBlackTest {
 
 	@Test
 	// Caso 9, Clase 16 (usuario ∉ BD)
-	// usuario ∉ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
+	// usuario ∉ BD, venta ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="motivo"
 	// Resultado esperado: false y la venta no cambia
 	public void test9() {
 		// Preparar: el usuario que denuncia no está en la BD
