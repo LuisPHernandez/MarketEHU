@@ -113,7 +113,7 @@ public class AcceptEskaintzaMockWhiteTest {
 		
 		verify(db, never()).persist(any());
 		verify(db, never()).merge(any());
-	}x	
+	}
 	
 	@Test
 	public void pedidoCerrado() {
