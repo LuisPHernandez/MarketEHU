@@ -124,30 +124,30 @@ public class ReportSaleBDBlackTest {
 		assertTrue(sale.getSalaketak().isEmpty());
 	}
 
-	// @Test
-	// // Caso 4, Clase 6 (saleNumber == null)
-	// // usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
-	// // Resultado esperado: false y la venta no cambia
-	// public void test4() {
-	// 	saleNumber = null;
-	// 	testDA.open();
-	// 	long salaketakBefore = testDA.countSalaketak();
-	// 	testDA.close();
+	@Test
+	// Caso 4, Clase 6 (saleNumber == null)
+	// usuario ∈ BD, venta ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
+	// Resultado esperado: false y la venta no cambia
+	public void test4() {
+		saleNumber = null;
+		testDA.open();
+		long salaketakBefore = testDA.countSalaketak();
+		testDA.close();
 
-	// 	// Llamar al sistema bajo prueba
-	// 	sut.open();
-	// 	boolean result = sut.reportSale(userEmail, saleNumber, reason);
-	// 	sut.close();
+		// Llamar al sistema bajo prueba
+		sut.open();
+		boolean result = sut.reportSale(userEmail, saleNumber, reason);
+		sut.close();
 
-	// 	// Salida
-	// 	assertFalse(result);
+		// Salida
+		assertFalse(result);
 
-	// 	// Estado de la BD: no se ha añadido ninguna denuncia
-	// 	testDA.open();
-	// 	long salaketakAfter = testDA.countSalaketak();
-	// 	testDA.close();
-	// 	assertEquals(salaketakBefore, salaketakAfter);
-	// }
+		// Estado de la BD: no se ha añadido ninguna denuncia
+		testDA.open();
+		long salaketakAfter = testDA.countSalaketak();
+		testDA.close();
+		assertEquals(salaketakBefore, salaketakAfter);
+	}
 	
 	@Test
 	// Caso 5, Clase 8 (userEmail con formato incorrecto)

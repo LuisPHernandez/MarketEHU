@@ -1,7 +1,5 @@
 import static org.junit.Assert.*;
 
-import java.util.Date;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +7,6 @@ import org.junit.Test;
 import dataAccess.DataAccess;
 import domain.Bidalketa;
 import domain.Eskaera;
-import domain.Eskaintza;
 import domain.Mugimenduak;
 import domain.Sale;
 import domain.Seller;
