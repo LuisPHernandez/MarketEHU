@@ -9,11 +9,12 @@ import org.junit.Test;
 import dataAccess.DataAccess;
 import domain.Salaketa;
 import domain.Sale;
+import testOperations.SharedDataAccess;
 import testOperations.TestDataAccess;
 
 public class ReportSaleBDWhiteTest {
-	// Sistema bajo prueba (al crearlo, la BD se reinicia con los datos iniciales)
-	private static DataAccess sut = new DataAccess();
+	// Sistema bajo prueba (compartido por todas las clases de test con BD)
+	private static DataAccess sut = SharedDataAccess.get();
 
 	// Operaciones auxiliares para preparar y limpiar la BD
 	private static TestDataAccess testDA = new TestDataAccess();

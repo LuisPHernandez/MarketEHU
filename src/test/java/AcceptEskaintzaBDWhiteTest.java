@@ -10,11 +10,12 @@ import domain.Eskaera;
 import domain.Mugimenduak;
 import domain.Sale;
 import domain.Seller;
+import testOperations.SharedDataAccess;
 import testOperations.TestDataAccess;
 
 public class AcceptEskaintzaBDWhiteTest {
     // Sistema bajo prueba.
-    private static DataAccess sut = new DataAccess();
+    private static DataAccess sut = SharedDataAccess.get();
 
     // Operaciones auxiliares para preparar, consultar y limpiar la BD.
     private static TestDataAccess testDA = new TestDataAccess();

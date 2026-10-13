@@ -23,8 +23,8 @@
 				<version>3.5.3</version>
 				<configuration>
 					<testFailureIgnore>true</testFailureIgnore>
-					<argLine>-Duser.language=es -Duser.country=ES</argLine>
-					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+					<reuseForks>false</reuseForks>
+					<argLine>@{argLine} -Duser.language=es -Duser.country=ES</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
