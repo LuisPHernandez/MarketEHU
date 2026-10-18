@@ -10,11 +10,12 @@ import dataAccess.DataAccess;
 import domain.Salaketa;
 import domain.Sale;
 import testOperations.SaleTestData;
+import testOperations.SharedDataAccess;
 import testOperations.TestDataAccess;
 
 public class ReportSaleBDWhiteTest {
-	// Sistema bajo prueba (al crearlo, la BD se reinicia con los datos iniciales)
-	private static DataAccess sut = new DataAccess();
+	// Sistema bajo prueba (compartido por todas las clases de test con BD)
+	private static DataAccess sut = SharedDataAccess.get();
 
 	// Operaciones auxiliares para preparar y limpiar la BD
 	private static TestDataAccess testDA = new TestDataAccess();
@@ -31,7 +32,8 @@ public class ReportSaleBDWhiteTest {
 
 	@Before
 	public void setUp() {
-		// Valores por defecto de los parámetros (caso 5, camino que llega al return true)
+		// Valores por defecto de los parámetros (caso 5, camino que llega al return
+		// true)
 		userEmail = DEFAULT_USER_EMAIL;
 		saleNumber = DEFAULT_SALE_NUMBER;
 		reason = "motivo";
@@ -46,18 +48,19 @@ public class ReportSaleBDWhiteTest {
 
 	@After
 	public void tearDown() {
-		// Restaurar la BD: eliminar lo creado (el vendedor se elimina con su venta y sus denuncias)
+		// Restaurar la BD: eliminar lo creado (el vendedor se elimina con su venta y
+		// sus denuncias)
 		testDA.open();
 		testDA.removeSeller(DEFAULT_USER_EMAIL);
 		testDA.removeSeller(OWNER_EMAIL);
 		testDA.close();
 	}
-	
 
-	 @Test 
+	@Test
 	// Caso 1, Camino 1-try2(T)-15-20-End
 	// Condición: db.find(...) lanza una excepción (saleNumber == null)
-	// u ∈ BD, s ∉ BD (no puede existir una venta con saleNumber null); userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
+	// u ∈ BD, s ∉ BD (no puede existir una venta con saleNumber null);
+	// userEmail="lhernandez@ehu.eus", saleNumber=null, reason="motivo"
 	// Resultado esperado: false y la BD no cambia
 	public void test1() {
 		saleNumber = null;
@@ -83,7 +86,8 @@ public class ReportSaleBDWhiteTest {
 	@Test
 	// Caso 2, Camino 1-try2(F)-3-5-if6.1(T)-7-9-End
 	// Condición: la venta no existe (sale == null)
-	// u ∈ BD, s ∉ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
+	// u ∈ BD, s ∉ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="motivo"
 	// Resultado esperado: false y la BD no cambia
 	public void test2() {
 		// Preparar: la venta 100 no está en la BD
@@ -109,7 +113,8 @@ public class ReportSaleBDWhiteTest {
 
 	@Test
 	// Caso 3, Camino 1-try2(F)-3-5-if6.1(F)-if6.2(T)-7-9-End
-	// Condición: la venta existe y el motivo es null (sale != null && reason == null)
+	// Condición: la venta existe y el motivo es null (sale != null && reason ==
+	// null)
 	// u ∈ BD, s ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason=null
 	// Resultado esperado: false y la BD no cambia
 	public void test3() {
@@ -132,7 +137,8 @@ public class ReportSaleBDWhiteTest {
 
 	@Test
 	// Caso 4, Camino 1-try2(F)-3-5-if6.1(F)-if6.2(F)-if6.3(T)-7-9-End
-	// Condición: la venta existe, el motivo no es null y es vacío (sale != null && reason != null && reason.isEmpty())
+	// Condición: la venta existe, el motivo no es null y es vacío (sale != null &&
+	// reason != null && reason.isEmpty())
 	// u ∈ BD, s ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason=""
 	// Resultado esperado: false y la BD no cambia
 	public void test4() {
@@ -155,9 +161,12 @@ public class ReportSaleBDWhiteTest {
 
 	@Test
 	// Caso 5, Camino 1-try2(F)-3-5-if6.1(F)-if6.2(F)-if6.3(F)-10-14-End
-	// Condición: la venta existe y el motivo no es null ni vacío (sale != null && reason != null && !reason.isEmpty())
-	// u ∈ BD, s ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100, reason="motivo"
-	// Resultado esperado: true y se asocian el motivo y el email del usuario a la venta
+	// Condición: la venta existe y el motivo no es null ni vacío (sale != null &&
+	// reason != null && !reason.isEmpty())
+	// u ∈ BD, s ∈ BD; userEmail="lhernandez@ehu.eus", saleNumber=100,
+	// reason="motivo"
+	// Resultado esperado: true y se asocian el motivo y el email del usuario a la
+	// venta
 	public void test5() {
 		// Llamar al sistema bajo prueba
 		sut.open();

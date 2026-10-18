@@ -1,7 +1,5 @@
 import static org.junit.Assert.*;
 
-import java.util.Date;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,15 +7,15 @@ import org.junit.Test;
 import dataAccess.DataAccess;
 import domain.Bidalketa;
 import domain.Eskaera;
-import domain.Eskaintza;
 import domain.Mugimenduak;
 import domain.Sale;
 import domain.Seller;
+import testOperations.SharedDataAccess;
 import testOperations.TestDataAccess;
 
 public class AcceptEskaintzaBDWhiteTest {
     // Sistema bajo prueba.
-    private static DataAccess sut = new DataAccess();
+    private static DataAccess sut = SharedDataAccess.get();
 
     // Operaciones auxiliares para preparar, consultar y limpiar la BD.
     private static TestDataAccess testDA = new TestDataAccess();

@@ -15,7 +15,6 @@ import domain.Seller;
 import domain.Eskaera;
 import domain.Eskaintza;
 import domain.Mugimenduak;
-import domain.Bidalketa;
 
 public class TestDataAccess {
 	protected EntityManager db;
