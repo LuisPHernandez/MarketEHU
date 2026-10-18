@@ -148,9 +148,9 @@ public class DataAccess {
     }
     
     public List<Sale> getSales(String desc) {
+        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.buyer IS NULL", Sale.class);
         System.out.println(">> DataAccess: getProducts=> from= "+desc);
         List<Sale> res = new ArrayList<Sale>(); 
-        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.buyer IS NULL", Sale.class);
         query.setParameter(1, "%"+desc+"%");
         
         List<Sale> sales = query.getResultList();
@@ -161,11 +161,11 @@ public class DataAccess {
     }
     
     public List<Sale> getPublishedSales(String desc, Date pubDate) {
+        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.pubDate <=?2 AND s.buyer IS NULL",Sale.class);
+        query.setParameter(2,pubDate);
         System.out.println(">> DataAccess: getProducts=> from= "+desc);
         List<Sale> res = new ArrayList<Sale>(); 
-        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.pubDate <=?2 AND s.buyer IS NULL",Sale.class);
         query.setParameter(1, "%"+desc+"%");
-        query.setParameter(2,pubDate);
         
         List<Sale> sales = query.getResultList();
         for (Sale sale:sales){
@@ -391,26 +391,8 @@ public class DataAccess {
                 return false;
             }
             
-            sale.getSalaketak().removeIf(
-            	    s -> Objects.equals(s.getId(), salaketa.getId())
-            	);
-
-            Salaketa s = db.find(Salaketa.class, salaketa.getId());
-            if (s != null) {
-                s.setTratatuta(true);
-                db.merge(s);
-            }
-           
-            if (aceptar) {
-                Seller owner = sale.getSeller();
-                if (owner != null) {
-                    owner.removeSale(sale);
-                    db.merge(owner);
-                }
-                db.remove(sale);
-            } else {
-                db.merge(sale);
-            }
+            markSaleAsTreated(sale, salaketa);
+            applyReportDecision(sale, aceptar);
 
             db.getTransaction().commit();
             return true;
@@ -421,6 +403,35 @@ public class DataAccess {
             return false;
         }
     }
+
+	private void applyReportDecision(Sale sale, boolean aceptar) {
+		if (aceptar) {
+		    removeSaleFromOwner(sale);
+		    db.remove(sale);
+		} else {
+		    db.merge(sale);
+		}
+	}
+
+	private void removeSaleFromOwner(Sale sale) {
+		Seller owner = sale.getSeller();
+		if (owner != null) {
+		    owner.removeSale(sale);
+		    db.merge(owner);
+		}
+	}
+
+	private void markSaleAsTreated(Sale sale, Salaketa salaketa) {
+		sale.getSalaketak().removeIf(
+			    s -> Objects.equals(s.getId(), salaketa.getId())
+			);
+
+		Salaketa s = db.find(Salaketa.class, salaketa.getId());
+		if (s != null) {
+		    s.setTratatuta(true);
+		    db.merge(s);
+		}
+	}
 
     public boolean addErreklamazioa(Integer saleNumber, String reason, String buyerEmail) {
         try {
@@ -718,79 +729,23 @@ public class DataAccess {
     }
 
     /**
-     * Acepta una oferta (Eskaintza) realizada por un vendedor sobre una solicitud (Eskaera)
-     * de un comprador, y formaliza la compra en una única transacción.
+     * Acepta una oferta (Eskaintza) realizada por un vendedor sobre una solicitud
+     * (Eskaera) de un comprador, y formaliza la compra en una única transacción.
      *
-     * Si se produce cualquier fallo, se hace rollback y la base de datos no se modifica.
-     *
-     * @param eskaeraId   identificador de la solicitud (Eskaera) a la que pertenece la oferta
-     * @param eskaintzaId identificador de la oferta (Eskaintza) que se desea aceptar
-     * @return {@code true} si la oferta se aceptó y la compra se registró correctamente;
-     *         {@code false} si la solicitud o la oferta no existen, la solicitud ya está cerrada,
-     *         el comprador no tiene saldo suficiente para pagar el precio, o se produce
-     *         una excepción durante la transacción
+     * 
      */
     public boolean acceptEskaintza(Integer eskaeraId, Integer eskaintzaId) {
         try {
-            // Todas las modificaciones se hacen en una única transacción:
-            // o se aplican todas, o ninguna (rollback).
             db.getTransaction().begin();
-            
-            // 1. Recuperar la solicitud y la oferta de la base de datos
             Eskaera eskaera = db.find(Eskaera.class, eskaeraId);
             Eskaintza eskaintza = db.find(Eskaintza.class, eskaintzaId);
-            
-            // 2. Validaciones: ambas deben existir y la solicitud debe seguir abierta
-            if (eskaera == null || eskaintza == null || eskaera.isClosed()) {
+
+            if (!canAcceptEskaintza(eskaera, eskaintza)) {
                 db.getTransaction().rollback();
                 return false;
             }
 
-            // El comprador es quien creó la solicitud; el vendedor, quien hizo la oferta
-            Seller buyer = eskaera.getBuyer();
-            Seller seller = eskaintza.getSeller();
-            float price = eskaintza.getPrice();
-
-            // 3. Comprobar que el comprador tiene saldo suficiente para pagar la oferta
-            if (buyer.getMoney() < price) {
-                db.getTransaction().rollback();
-                return false; 
-            }
-
-            // 4. Cobro: se descuenta el precio del saldo del comprador
-            buyer.addMoney(-price);
-       
-            // 5. Cerrar la solicitud para que no se acepten más ofertas
-            eskaera.setClosed(true);
-
-            // 6. Crear la venta en el vendedor a partir de los datos de la solicitud y la oferta
-            //    (cantidad 1, fecha actual, sin imagen)
-            String tituloSale = "[Eskaera] " + eskaera.getTitle();
-            String descSale = eskaintza.getMessage();
-            
-            Sale transaccion = seller.addSale(tituloSale, descSale, 1, price, new java.util.Date(), null);
-            // Asociar la venta al comprador y añadirla a su lista de compras
-            transaccion.setBuyer(buyer);
-            buyer.addPurchasedSale(transaccion);
-            
-            // 7. Crear el envío asociado a la venta
-            Bidalketa bidalketa = new Bidalketa(transaccion);
-            transaccion.setBidalketa(bidalketa);
-            
-            db.persist(bidalketa);
-            db.persist(transaccion);
-
-            // 8. Registrar el movimiento de pago del comprador, vinculado a la solicitud y la oferta
-            Mugimenduak mugimendu = new Mugimenduak("ESKAINTZA_ORDAINKETA", new java.util.Date(), buyer);
-            mugimendu.setEskaera(eskaera);
-            mugimendu.setEskaintza(eskaintza);
-            db.persist(mugimendu);
-
-            // 9. Guardar los cambios de las entidades modificadas y confirmar la transacción
-            db.merge(buyer);
-            db.merge(seller);
-            db.merge(eskaera);
-            
+            formalizeEskaintza(eskaera, eskaintza);
             db.getTransaction().commit();
             return true;
         } catch (Exception e) {
@@ -799,6 +754,65 @@ public class DataAccess {
             db.getTransaction().rollback();
             return false;
         }
+    }
+
+    /**
+     * Comprueba si una oferta se puede aceptar.
+
+     */
+    private boolean canAcceptEskaintza(Eskaera eskaera, Eskaintza eskaintza) {
+        return eskaera != null && eskaintza != null && !eskaera.isClosed()
+                && eskaera.getBuyer().getMoney() >= eskaintza.getPrice();
+    }
+
+    /**
+     * Formaliza la compra de una oferta ya validada. Debe llamarse dentro de una
+     * transacción abierta.
+     */
+    private void formalizeEskaintza(Eskaera eskaera, Eskaintza eskaintza) {
+        // El comprador es quien creó la solicitud; el vendedor, quien hizo la oferta
+        Seller buyer = eskaera.getBuyer();
+        Seller seller = eskaintza.getSeller();
+
+        buyer.addMoney(-eskaintza.getPrice());
+        eskaera.setClosed(true);
+
+        createEskaeraSale(eskaera, eskaintza, seller, buyer);
+        registerEskaintzaPayment(buyer, eskaera, eskaintza);
+
+        db.merge(buyer);
+        db.merge(seller);
+        db.merge(eskaera);
+    }
+
+    /**
+     * Crea en el vendedor la venta correspondiente a la oferta aceptada, la
+     * asigna al comprador y crea el envío (Bidalketa) asociado.
+     */
+    private void createEskaeraSale(Eskaera eskaera, Eskaintza eskaintza, Seller seller, Seller buyer) {
+        String tituloSale = "[Eskaera] " + eskaera.getTitle();
+        String descSale = eskaintza.getMessage();
+
+        Sale transaccion = seller.addSale(tituloSale, descSale, 1, eskaintza.getPrice(), new java.util.Date(), null);
+        transaccion.setBuyer(buyer);
+        buyer.addPurchasedSale(transaccion);
+
+        Bidalketa bidalketa = new Bidalketa(transaccion);
+        transaccion.setBidalketa(bidalketa);
+
+        db.persist(bidalketa);
+        db.persist(transaccion);
+    }
+
+    /**
+     * Registra el movimiento (Mugimenduak) de pago del comprador, de tipo
+
+     */
+    private void registerEskaintzaPayment(Seller buyer, Eskaera eskaera, Eskaintza eskaintza) {
+        Mugimenduak mugimendu = new Mugimenduak("ESKAINTZA_ORDAINKETA", new java.util.Date(), buyer);
+        mugimendu.setEskaera(eskaera);
+        mugimendu.setEskaintza(eskaintza);
+        db.persist(mugimendu);
     }
 
     public boolean confirmArrival(Integer saleNumber) {

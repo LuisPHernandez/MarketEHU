@@ -9,6 +9,7 @@ import org.junit.Test;
 import dataAccess.DataAccess;
 import domain.Salaketa;
 import domain.Sale;
+import testOperations.SaleTestData;
 import testOperations.TestDataAccess;
 
 public class ReportSaleBDWhiteTest {
@@ -39,7 +40,7 @@ public class ReportSaleBDWhiteTest {
 		testDA.open();
 		testDA.createSeller(OWNER_EMAIL, "Vendedor Test", "123");
 		testDA.createSeller(DEFAULT_USER_EMAIL, "Seller Test", "123");
-		testDA.createSale(OWNER_EMAIL, "Balón", "balón de fútbol", 2, 10, new Date(), DEFAULT_SALE_NUMBER);
+		testDA.createSale(OWNER_EMAIL, new SaleTestData("Balón", "balón de fútbol", 2, 10, new Date()), DEFAULT_SALE_NUMBER);
 		testDA.close();
 	}
 

@@ -1,7 +1,6 @@
 package testOperations;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,11 +61,10 @@ public class TestDataAccess {
 	
 	// Crea una venta del Seller ownerEmail (siempre debe existir en la BD).
 	// Si saleNumber no es null, se fija ese número, si es null, lo genera la BD.
-	public Sale createSale(String ownerEmail, String title, String description, int status, float price,
-			Date pubDate, Integer saleNumber) {
+	public Sale createSale(String ownerEmail, SaleTestData data, Integer saleNumber) {
 		db.getTransaction().begin();
 		Seller owner = db.find(Seller.class, ownerEmail);
-		Sale sale = owner.addSale(title, description, status, price, pubDate, null);
+		Sale sale = owner.addSale(data.getTitle(), data.getDescription(), data.getStatus(), data.getPrice(), data.getPubDate(), null);
 		if (saleNumber != null) {
 			sale.setSaleNumber(saleNumber);
 		}
