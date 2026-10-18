@@ -156,7 +156,11 @@ public class DataAccess {
 
     public List<Sale> getSales(String desc) {
         TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.buyer IS NULL", Sale.class);
-        System.out.println(">> DataAccess: getProducts=> from= "+desc);
+        return searchSalesByTitle(query, desc);
+    }
+
+	private List<Sale> searchSalesByTitle(TypedQuery<Sale> query, String desc) {
+		System.out.println(">> DataAccess: getProducts=> from= "+desc);
         List<Sale> res = new ArrayList<Sale>(); 
         query.setParameter(1, "%"+desc+"%");
         
@@ -165,20 +169,12 @@ public class DataAccess {
             res.add(sale);
         }
         return res;
-    }
+	}
     
     public List<Sale> getPublishedSales(String desc, Date pubDate) {
         TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.pubDate <=?2 AND s.buyer IS NULL",Sale.class);
         query.setParameter(2,pubDate);
-        System.out.println(">> DataAccess: getProducts=> from= "+desc);
-        List<Sale> res = new ArrayList<Sale>(); 
-        query.setParameter(1, "%"+desc+"%");
-        
-        List<Sale> sales = query.getResultList();
-        for (Sale sale:sales){
-            res.add(sale);
-        }
-        return res;
+        return searchSalesByTitle(query, desc);
     }
 
     public void open() {
