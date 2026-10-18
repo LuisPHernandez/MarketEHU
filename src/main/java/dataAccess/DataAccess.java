@@ -32,6 +32,7 @@ import domain.Eskaintza;
 import domain.Mugimenduak;
 import domain.Salaketa;
 import domain.Sale;
+import domain.SaleData;
 import exceptions.FileNotUploadedException;
 import exceptions.MustBeLaterThanTodayException;
 import exceptions.SaleAlreadyExistException;
@@ -115,11 +116,12 @@ public class DataAccess {
         }
     }
 
-    public Sale createSale(String title, String description, int status, float price, Date pubDate, String sellerEmail,
-            File file) throws FileNotUploadedException, MustBeLaterThanTodayException, SaleAlreadyExistException {
+    public Sale createSale(SaleData data, String sellerEmail, File file)
+            throws FileNotUploadedException, MustBeLaterThanTodayException, SaleAlreadyExistException {
+        String title = data.getTitle();
         System.out.println(">> DataAccess: createProduct=> title= " + title + " seller=" + sellerEmail);
         try {
-            if (pubDate.before(UtilDate.trim(new Date()))) {
+            if (data.getPubDate().before(UtilDate.trim(new Date()))) {
                 throw new MustBeLaterThanTodayException(
                         ResourceBundle.getBundle("Etiquetas").getString("DataAccess.ErrorSaleMustBeLaterThanToday"));
             }
@@ -136,7 +138,8 @@ public class DataAccess {
                         ResourceBundle.getBundle("Etiquetas").getString("DataAccess.SaleAlreadyExist"));
             }
 
-            Sale sale = seller.addSale(title, description, status, price, pubDate, file);
+            Sale sale = seller.addSale(title, data.getDescription(), data.getStatus(), data.getPrice(),
+                    data.getPubDate(), file);
 
             db.persist(seller);
             db.getTransaction().commit();
@@ -466,49 +469,54 @@ public class DataAccess {
                 db.getTransaction().rollback();
                 return false;
             }
-
-            if (accept) {
-                Seller buyer = sale.getBuyer();
-                Seller seller = sale.getSeller();
-
-                if (buyer != null && seller != null) {
-                    buyer.addMoney(sale.getPrice());
-                    seller.addMoney(-sale.getPrice());
-
-                    Mugimenduak mBuyer = new Mugimenduak("ITZULKETA", new java.util.Date(), buyer);
-                    mBuyer.setSale(sale);
-                    db.persist(mBuyer);
-
-                    Mugimenduak mSeller = new Mugimenduak("ITZULKETA_KENTZEA", new java.util.Date(), seller);
-                    mSeller.setSale(sale);
-                    db.persist(mSeller);
-
-                    buyer.getPurchasedSales().remove(sale);
-                    sale.setBuyer(null);
-
-                    db.merge(buyer);
-                    db.merge(seller);
-                }
-            }
-
-            Erreklamazioa err = sale.getErreklamazioa();
-            sale.setErreklamazioa(null);
-            db.merge(sale);
-
-            if (err != null) {
-                Erreklamazioa dbErr = db.find(Erreklamazioa.class, err.getId());
-                if (dbErr != null)
-                    err.setTratatuta(true);
-                db.merge(err);
-            }
-
+            applyResolution(sale, accept);
             db.getTransaction().commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
-            db.getTransaction().rollback();
-            return false;
+            return rollbackAndFail(e);
         }
+    }
+
+    private void applyResolution(Sale sale, boolean accept) {
+        if (accept) {
+            refundSale(sale);
+        }
+        closeErreklamazioa(sale);
+    }
+
+    private void refundSale(Sale sale) {
+        Seller buyer = sale.getBuyer();
+        Seller seller = sale.getSeller();
+        if (buyer == null || seller == null) {
+            return;
+        }
+        buyer.addMoney(sale.getPrice());
+        seller.addMoney(-sale.getPrice());
+        persistMugimendu("ITZULKETA", buyer, sale);
+        persistMugimendu("ITZULKETA_KENTZEA", seller, sale);
+        buyer.getPurchasedSales().remove(sale);
+        sale.setBuyer(null);
+        db.merge(buyer);
+        db.merge(seller);
+    }
+
+    private void closeErreklamazioa(Sale sale) {
+        Erreklamazioa err = sale.getErreklamazioa();
+        sale.setErreklamazioa(null);
+        db.merge(sale);
+
+        if (err != null) {
+            Erreklamazioa dbErr = db.find(Erreklamazioa.class, err.getId());
+            if (dbErr != null)
+                err.setTratatuta(true);
+            db.merge(err);
+        }
+    }
+
+    private boolean rollbackAndFail(Exception e) {
+        e.printStackTrace();
+        db.getTransaction().rollback();
+        return false;
     }
 
     public Admin isAdmin(String log, String pass) {
@@ -530,20 +538,13 @@ public class DataAccess {
             Seller buyer = db.find(Seller.class, buyerEmail);
             Sale sale = db.find(Sale.class, saleNumber);
 
-            if (buyer == null || sale == null || sale.getBuyer() != null) {
+            if (!canBeAddedToBasket(buyer, sale, saleNumber)) {
                 db.getTransaction().rollback();
                 return false;
             }
 
             List<Sale> basket = buyer.getBasket();
-
-            for (Sale s : basket) {
-                if (s.getSaleNumber().equals(saleNumber)) {
-                    db.getTransaction().rollback();
-                    return false;
-                }
-            }
-
+            
             if (basket.isEmpty()) {
                 basket.add(sale);
                 db.merge(buyer);
@@ -551,7 +552,7 @@ public class DataAccess {
                 return true;
             }
 
-            Seller firstSeller = buyer.getBasket().get(0).getSeller();
+            Seller firstSeller = basket.get(0).getSeller();
 
             if (!sale.getSeller().equals(firstSeller)) {
                 return false;
@@ -568,6 +569,20 @@ public class DataAccess {
             db.getTransaction().rollback();
             return false;
         }
+    }
+        
+    private boolean canBeAddedToBasket(Seller buyer, Sale sale, Integer saleNumber) {
+        return buyer != null && sale != null && sale.getBuyer() == null
+                && !isInBasket(buyer.getBasket(), saleNumber);
+    }
+    
+    private boolean isInBasket(List<Sale> basket, Integer saleNumber) {
+        for (Sale s : basket) {
+            if (s.getSaleNumber().equals(saleNumber)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean removeFromBasket(String email, Integer saleNumber) {
@@ -845,6 +860,13 @@ public class DataAccess {
             return false;
         }
     }
+    
+    private void persistMugimendu(String mota, Seller seller, Sale sale) {
+        Mugimenduak mugimendu = new Mugimenduak(mota, new java.util.Date(), seller);
+        mugimendu.setSale(sale);
+        db.persist(mugimendu);
+    }
+
 
     public void close() {
         db.close();
