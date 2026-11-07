@@ -49,6 +49,16 @@ public interface BLFacade  {
 	 */
 	@WebMethod public List<Sale> getSales(String desc);
 	
+	
+	/**
+	 * This method retrieves the products that contain desc as an extended iterator
+	 * 
+	 * @param desc the text to search
+	 * @return iterator over the sales that contain desc
+	 */
+	@WebMethod public ExtendedIterator<Sale> getSalesIterator(String desc);
+
+	
 	/**
 	 * 	 * This method retrieves the products that contain a desc text in a title and the publicationDate today or before
 	 * 

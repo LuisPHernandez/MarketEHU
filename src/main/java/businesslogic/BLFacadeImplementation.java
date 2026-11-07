@@ -71,6 +71,16 @@ public class BLFacadeImplementation  implements BLFacade {
 		return rides;
 	}
 	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@WebMethod
+	public ExtendedIterator<Sale> getSalesIterator(String desc) {
+		return new ExtendedIteratorSales(getSales(desc));
+	}
+
+	
 	/**
 	    * {@inheritDoc}
 	    */
