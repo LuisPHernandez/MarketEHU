@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,24 +51,32 @@ public class DataAccess {
     ConfigXML c = ConfigXML.getInstance();
 
     public DataAccess() {
-        if (c.isDatabaseInitialized()) {
-            String fileName = c.getDbFilename();
-
-            try {
-                Files.delete(Paths.get(fileName));
-                Files.deleteIfExists(Paths.get(fileName + "$"));
-            } catch (IOException e) {
-                throw new IllegalStateException(
-                        "No se pudo eliminar la base de datos", e);
-            }
-        }
+        boolean mustInitialize = c.isDatabaseLocal() ? prepareLocalDatabase() : c.isDatabaseInitialized();
         open();
-
-        if (c.isDatabaseInitialized()) {
+        if (mustInitialize) {
             initializeDB();
         }
-
         close();
+    }
+
+    /**
+     * Crea la carpeta de la BD si no existe y, si initialize="true", borra la BD
+     * anterior.
+     * 
+     * @return true si la BD no existe y hay que llenarla con los datos de ejemplo
+     */
+    private boolean prepareLocalDatabase() {
+        Path dbPath = Paths.get(c.getDbFilename());
+        try {
+            Files.createDirectories(dbPath.getParent());
+            if (c.isDatabaseInitialized()) {
+                Files.deleteIfExists(dbPath);
+                Files.deleteIfExists(Paths.get(c.getDbFilename() + "$"));
+            }
+            return Files.notExists(dbPath);
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo preparar la base de datos en " + dbPath, e);
+        }
     }
 
     public DataAccess(EntityManager db) {
@@ -155,25 +164,27 @@ public class DataAccess {
     }
 
     public List<Sale> getSales(String desc) {
-        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.buyer IS NULL", Sale.class);
+        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.buyer IS NULL",
+                Sale.class);
         return searchSalesByTitle(query, desc);
     }
 
-	private List<Sale> searchSalesByTitle(TypedQuery<Sale> query, String desc) {
-		System.out.println(">> DataAccess: getProducts=> from= "+desc);
-        List<Sale> res = new ArrayList<Sale>(); 
-        query.setParameter(1, "%"+desc+"%");
-        
+    private List<Sale> searchSalesByTitle(TypedQuery<Sale> query, String desc) {
+        System.out.println(">> DataAccess: getProducts=> from= " + desc);
+        List<Sale> res = new ArrayList<Sale>();
+        query.setParameter(1, "%" + desc + "%");
+
         List<Sale> sales = query.getResultList();
-        for (Sale sale:sales){
+        for (Sale sale : sales) {
             res.add(sale);
         }
         return res;
-	}
-    
+    }
+
     public List<Sale> getPublishedSales(String desc, Date pubDate) {
-        TypedQuery<Sale> query = db.createQuery("SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.pubDate <=?2 AND s.buyer IS NULL",Sale.class);
-        query.setParameter(2,pubDate);
+        TypedQuery<Sale> query = db.createQuery(
+                "SELECT s FROM Sale s WHERE s.title LIKE ?1 AND s.pubDate <=?2 AND s.buyer IS NULL", Sale.class);
+        query.setParameter(2, pubDate);
         return searchSalesByTitle(query, desc);
     }
 
@@ -407,34 +418,33 @@ public class DataAccess {
         }
     }
 
-	private void applyReportDecision(Sale sale, boolean aceptar) {
-		if (aceptar) {
-		    removeSaleFromOwner(sale);
-		    db.remove(sale);
-		} else {
-		    db.merge(sale);
-		}
-	}
+    private void applyReportDecision(Sale sale, boolean aceptar) {
+        if (aceptar) {
+            removeSaleFromOwner(sale);
+            db.remove(sale);
+        } else {
+            db.merge(sale);
+        }
+    }
 
-	private void removeSaleFromOwner(Sale sale) {
-		Seller owner = sale.getSeller();
-		if (owner != null) {
-		    owner.removeSale(sale);
-		    db.merge(owner);
-		}
-	}
+    private void removeSaleFromOwner(Sale sale) {
+        Seller owner = sale.getSeller();
+        if (owner != null) {
+            owner.removeSale(sale);
+            db.merge(owner);
+        }
+    }
 
-	private void markSaleAsTreated(Sale sale, Salaketa salaketa) {
-		sale.getSalaketak().removeIf(
-			    s -> Objects.equals(s.getId(), salaketa.getId())
-			);
+    private void markSaleAsTreated(Sale sale, Salaketa salaketa) {
+        sale.getSalaketak().removeIf(
+                s -> Objects.equals(s.getId(), salaketa.getId()));
 
-		Salaketa s = db.find(Salaketa.class, salaketa.getId());
-		if (s != null) {
-		    s.setTratatuta(true);
-		    db.merge(s);
-		}
-	}
+        Salaketa s = db.find(Salaketa.class, salaketa.getId());
+        if (s != null) {
+            s.setTratatuta(true);
+            db.merge(s);
+        }
+    }
 
     public boolean addErreklamazioa(Integer saleNumber, String reason, String buyerEmail) {
         try {
@@ -550,7 +560,7 @@ public class DataAccess {
             }
 
             List<Sale> basket = buyer.getBasket();
-            
+
             if (basket.isEmpty()) {
                 basket.add(sale);
                 db.merge(buyer);
@@ -576,12 +586,12 @@ public class DataAccess {
             return false;
         }
     }
-        
+
     private boolean canBeAddedToBasket(Seller buyer, Sale sale, Integer saleNumber) {
         return buyer != null && sale != null && sale.getBuyer() == null
                 && !isInBasket(buyer.getBasket(), saleNumber);
     }
-    
+
     private boolean isInBasket(List<Sale> basket, Integer saleNumber) {
         for (Sale s : basket) {
             if (s.getSaleNumber().equals(saleNumber)) {
@@ -771,7 +781,7 @@ public class DataAccess {
 
     /**
      * Comprueba si una oferta se puede aceptar.
-
+     * 
      */
     private boolean canAcceptEskaintza(Eskaera eskaera, Eskaintza eskaintza) {
         return eskaera != null && eskaintza != null && !eskaera.isClosed()
@@ -819,7 +829,7 @@ public class DataAccess {
 
     /**
      * Registra el movimiento (Mugimenduak) de pago del comprador, de tipo
-
+     * 
      */
     private void registerEskaintzaPayment(Seller buyer, Eskaera eskaera, Eskaintza eskaintza) {
         Mugimenduak mugimendu = new Mugimenduak("ESKAINTZA_ORDAINKETA", new java.util.Date(), buyer);
@@ -859,13 +869,12 @@ public class DataAccess {
             return false;
         }
     }
-    
+
     private void persistMugimendu(String mota, Seller seller, Sale sale) {
         Mugimenduak mugimendu = new Mugimenduak(mota, new java.util.Date(), seller);
         mugimendu.setSale(sale);
         db.persist(mugimendu);
     }
-
 
     public void close() {
         db.close();

@@ -27,13 +27,13 @@ public class WalletGUI extends JFrame {
         setLayout(null);
         setLocationRelativeTo(null);
 
-        //  Label saldo
+        // Label saldo
         labelSaldo = new JLabel(ResourceBundle.getBundle("Etiquetas").getString("WalletGUI.DiruaOrain"));
         labelSaldo.setFont(new Font("Tahoma", Font.BOLD, 16));
         labelSaldo.setBounds(100, 20, 200, 30);
         add(labelSaldo);
 
-        //  meter dinero
+        // meter dinero
         JLabel labelCantidad = new JLabel(ResourceBundle.getBundle("Etiquetas").getString("WalletGUI.Kantitatea"));
         labelCantidad.setBounds(40, 70, 80, 25);
         add(labelCantidad);
@@ -42,20 +42,17 @@ public class WalletGUI extends JFrame {
         textCantidad.setBounds(120, 70, 100, 25);
         add(textCantidad);
 
-        //  Bot�n a�adir dinero
+        // Botï¿½n aï¿½adir dinero
         btnAddMoney = new JButton(ResourceBundle.getBundle("Etiquetas").getString("WalletGUI.DiruaGehitu"));
         btnAddMoney.setBounds(80, 110, 180, 30);
         add(btnAddMoney);
 
-        
         btnClose = new JButton(ResourceBundle.getBundle("Etiquetas").getString("Close"));
         btnClose.setBounds(110, 150, 120, 25);
         add(btnClose);
 
-      
         actualizarSaldo();
 
-        
         btnAddMoney.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -73,23 +70,21 @@ public class WalletGUI extends JFrame {
                     textCantidad.setText("");
 
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Introduce un n�mero v�lido");
+                    JOptionPane.showMessageDialog(null, "Introduce un nï¿½mero vï¿½lido");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
             }
         });
 
-      
         btnClose.addActionListener(e -> setVisible(false));
     }
 
-   
     private void actualizarSaldo() {
         try {
             BLFacade facade = MainGUI.getBusinessLogic();
             float money = facade.getMoney(userEmail);
-            labelSaldo.setText(ResourceBundle.getBundle("Etiquetas").getString("WalletGUI.Dirua") + money + "�");
+            labelSaldo.setText(ResourceBundle.getBundle("Etiquetas").getString("WalletGUI.Dirua") + money + "€");
         } catch (Exception e) {
             e.printStackTrace();
         }

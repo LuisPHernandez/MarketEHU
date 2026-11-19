@@ -5,9 +5,9 @@
 	<businessLogicPort>1099</businessLogicPort>
 	<businessLogicName>Market</businessLogicName>
   </businessLogic>
-  <database local="true" initialize="true">
+  <database local="true" initialize="false">
 	<databaseNode>127.0.0.1</databaseNode>
-	<dbFilename>src/main/resources/products.temp</dbFilename>
+	<dbFilename>MarketDB/products.temp</dbFilename>
 	<databasePort>6136</databasePort>
 	<user>admin</user>
 	<password>admin</password>

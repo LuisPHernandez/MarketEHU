@@ -3,7 +3,9 @@
   <groupId>Market26-si2-is2</groupId>
   <artifactId>luisphernanez_market</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
   <build>
+		<finalName>Market</finalName>
 		<plugins>
 		<plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -49,13 +51,19 @@
 			
 		</plugins>
 		<resources>
-        <resource>
-            <directory>src/main/java</directory>
-            <includes>
-                <include>*.properties</include>
-            </includes>
-        </resource>
-    </resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>*.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>products.temp*</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 	<repositories>
 		<repository>
@@ -66,8 +74,14 @@
 	</repositories>
 
 	<properties>
-		<maven.compiler.target>21</maven.compiler.target>
-		<maven.compiler.source>21</maven.compiler.source>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>21</maven.compiler.release>
+
+		<!-- Versiones de la pila Jakarta EE 10 -->
+		<faces.version>4.0.6</faces.version>
+		<servlet.version>6.0.0</servlet.version>
+		<cdi.version>4.0.1</cdi.version>
+		<weld.version>5.1.5.Final</weld.version>
 
 		<sonar.organization>luisphernandez</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -77,6 +91,36 @@
 
 	<!-- https://mvnrepository.com/artifact/junit/junit -->
 	<dependencies>
+		<!-- Jakarta Faces (implementación Mojarra) -->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.faces</artifactId>
+			<version>${faces.version}</version>
+		</dependency>
+
+		<!-- API de Servlet: la pone Tomcat, solo se necesita para compilar -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>${servlet.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- API de CDI -->
+		<dependency>
+			<groupId>jakarta.enterprise</groupId>
+			<artifactId>jakarta.enterprise.cdi-api</artifactId>
+			<version>${cdi.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Implementación de CDI (Weld) -->
+		<dependency>
+			<groupId>org.jboss.weld.servlet</groupId>
+			<artifactId>weld-servlet-shaded</artifactId>
+			<version>${weld.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

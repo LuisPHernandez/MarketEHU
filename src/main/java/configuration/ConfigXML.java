@@ -1,6 +1,8 @@
 package configuration;
 
-import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -15,42 +17,43 @@ import org.w3c.dom.NodeList;
  * It provides the configuration data from the "resources/config.xml" XML file
  */
 public class ConfigXML {
-	
-	private String configFile = "src/main/resources/config.xml";
-		
+
+	private String configFile = "config.xml";
+
 	private String businessLogicNode;
 
 	private String businessLogicPort;
 
 	private String businessLogicName;
-	
+
 	private static String dbFilename;
 
-	//Two possible values: true (if the database must be initialized ) or false (in other case)
+	// Two possible values: true (if the database must be initialized ) or false (in
+	// other case)
 	private boolean isDatabaseInitialized;
 
-	//Two possible values: true (no instance of RemoteServer needs to be launched) or false (RemoteServer needs to be run first)
+	// Two possible values: true (no instance of RemoteServer needs to be launched)
+	// or false (RemoteServer needs to be run first)
 	private boolean businessLogicLocal;
 
-	//Two possible values: true (if the database is in same node as business logic ) or false (in other case)
+	// Two possible values: true (if the database is in same node as business logic
+	// ) or false (in other case)
 	private boolean databaseLocal;
-	
-	private String databaseNode;
-	
-	private int databasePort;
-	
 
-	
+	private String databaseNode;
+
+	private int databasePort;
+
 	private String user;
-	
+
 	private String password;
-	
+
 	private String locale;
 
 	public String getLocale() {
 		return locale;
 	}
-	
+
 	public int getDatabasePort() {
 		return databasePort;
 	}
@@ -62,7 +65,7 @@ public class ConfigXML {
 	public String getPassword() {
 		return password;
 	}
-	
+
 	public boolean isDatabaseLocal() {
 		return databaseLocal;
 	}
@@ -70,84 +73,95 @@ public class ConfigXML {
 	public boolean isBusinessLogicLocal() {
 		return businessLogicLocal;
 	}
+
 	private static ConfigXML theInstance = new ConfigXML();
 
-	private ConfigXML(){
-		
-		  try {
-			  DocumentBuilderFactory dbFactory =
-				        DocumentBuilderFactory.newInstance();
+	private ConfigXML() {
 
-				dbFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-				dbFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-				dbFactory.setFeature(
-				    "http://apache.org/xml/features/disallow-doctype-decl", true
-				);
-			  DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			  Document doc = dBuilder.parse(new File(configFile));
-			  doc.getDocumentElement().normalize();
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
-			  NodeList list = doc.getElementsByTagName("config");
-			  Element config = (Element) list.item(0); // list.item(0) is a Node that is an Element
+			dbFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			dbFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			dbFactory.setFeature(
+					"http://apache.org/xml/features/disallow-doctype-decl", true);
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc;
+			try (InputStream in = ConfigXML.class.getClassLoader().getResourceAsStream(configFile)) {
+				doc = dBuilder.parse(in);
+			}
+			doc.getDocumentElement().normalize();
 
-			  
-				//Two possible values: true (no instance of RemoteServer needs to be launched) or false (RemoteServer needs to be run first)
-			  String value= ((Element)config.getElementsByTagName("businessLogic").item(0)).getAttribute("local");
-			  businessLogicLocal=value.equals("true");
+			NodeList list = doc.getElementsByTagName("config");
+			Element config = (Element) list.item(0); // list.item(0) is a Node that is an Element
 
-			  businessLogicNode = getTagValue("businessLogicNode", config);
+			// Two possible values: true (no instance of RemoteServer needs to be launched)
+			// or false (RemoteServer needs to be run first)
+			String value = ((Element) config.getElementsByTagName("businessLogic").item(0)).getAttribute("local");
+			businessLogicLocal = value.equals("true");
 
-			  businessLogicPort = getTagValue("businessLogicPort", config);
+			businessLogicNode = getTagValue("businessLogicNode", config);
 
-			  businessLogicName = getTagValue("businessLogicName", config);
-			  
-			  locale = getTagValue("locale", config);
+			businessLogicPort = getTagValue("businessLogicPort", config);
 
-			  
-			  
-				
+			businessLogicName = getTagValue("businessLogicName", config);
 
-			  dbFilename = getTagValue("dbFilename", config);
+			locale = getTagValue("locale", config);
 
-				//Two possible values: true (no instance of RemoteServer needs to be launched) or false (RemoteServer needs to be run first)
-			  value= ((Element)config.getElementsByTagName("database").item(0)).getAttribute("local");
-			  databaseLocal=value.equals("true");
-			  
-			  
-				//Two possible values: true (if the database must be initialized ) or false (in other case)
-			  String dbOpenValue= ((Element)config.getElementsByTagName("database").item(0)).getAttribute("initialize");
-			  isDatabaseInitialized= dbOpenValue.equals("true");;
+			// Two possible values: true (no instance of RemoteServer needs to be launched)
+			// or false (RemoteServer needs to be run first)
+			value = ((Element) config.getElementsByTagName("database").item(0)).getAttribute("local");
+			databaseLocal = value.equals("true");
 
-	
-			  databaseNode = getTagValue("databaseNode", config);
-			  
-			  databasePort=Integer.parseInt(getTagValue("databasePort", config));
-				
-			  user=getTagValue("user", config);
-				
-			  password=getTagValue("password", config);
+			dbFilename = resolveDbFilename(getTagValue("dbFilename", config));
 
-			  System.out.print("Read from config.xml: ");
-			  System.out.print("\t businessLogicLocal="+businessLogicLocal);
-			  System.out.print("\t databaseLocal="+databaseLocal);
-			  System.out.println("\t dataBaseInitialized="+isDatabaseInitialized); 
-					  
-		  } catch (Exception e) {
-			System.out.println("Error in ConfigXML.java: problems with "+ configFile);
-		    e.printStackTrace();
-		  }		
-		
+			// Two possible values: true (if the database must be initialized ) or false (in
+			// other case)
+			String dbOpenValue = ((Element) config.getElementsByTagName("database").item(0)).getAttribute("initialize");
+			isDatabaseInitialized = dbOpenValue.equals("true");
+			;
+
+			databaseNode = getTagValue("databaseNode", config);
+
+			databasePort = Integer.parseInt(getTagValue("databasePort", config));
+
+			user = getTagValue("user", config);
+
+			password = getTagValue("password", config);
+
+			System.out.print("Read from config.xml: ");
+			System.out.print("\t businessLogicLocal=" + businessLogicLocal);
+			System.out.print("\t databaseLocal=" + databaseLocal);
+			System.out.println("\t dataBaseInitialized=" + isDatabaseInitialized);
+
+		} catch (Exception e) {
+			System.out.println("Error in ConfigXML.java: problems with " + configFile);
+			e.printStackTrace();
+		}
+
 	}
 
-	private static String getTagValue(String sTag, Element eElement)
-	 {
-		  NodeList nlList= eElement.getElementsByTagName(sTag).item(0).getChildNodes();
-		  Node nValue = (Node) nlList.item(0);
+	private static String getTagValue(String sTag, Element eElement) {
+		NodeList nlList = eElement.getElementsByTagName(sTag).item(0).getChildNodes();
+		Node nValue = (Node) nlList.item(0);
 
-		  return nValue.getNodeValue();
+		return nValue.getNodeValue();
 
-	 }
-	
+	}
+
+	/**
+	 * Una ruta relativa se interpreta dentro de la carpeta personal del usuario,
+	 * para que la BD esté en el mismo sitio se ejecute desde Swing o desde Tomcat
+	 * y en cualquier ordenador.
+	 */
+	private String resolveDbFilename(String value) {
+		Path path = Paths.get(value);
+		if (databaseLocal && !path.isAbsolute()) {
+			path = Paths.get(System.getProperty("user.home")).resolve(path);
+		}
+		return path.toString();
+	}
+
 	public static ConfigXML getInstance() {
 		return theInstance;
 	}
@@ -163,12 +177,12 @@ public class ConfigXML {
 	public String getBusinessLogicName() {
 		return businessLogicName;
 	}
-	
-	public String getDbFilename(){
+
+	public String getDbFilename() {
 		return dbFilename;
 	}
 
-	public boolean isDatabaseInitialized(){
+	public boolean isDatabaseInitialized() {
 		return isDatabaseInitialized;
 	}
 
